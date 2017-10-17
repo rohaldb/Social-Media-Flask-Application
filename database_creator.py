@@ -2,7 +2,7 @@
 # creates the database
 
 
-import sqlite3, glob, os, re, pathlib
+import sqlite3, glob, os, re, pathlib, uuid
 import shutil
 conn = sqlite3.connect('database.db')
 c = conn.cursor()
@@ -23,26 +23,29 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
 		courses VARCHAR(100))""")
 c.execute("DROP TABLE IF EXISTS posts")
 c.execute("""CREATE TABLE IF NOT EXISTS posts(
+		id TEXT PRIMARY KEY,
 		zid TEXT REFERENCES Orders(ID),
 		created_at TEXT,
 		message TEXT,
 		latitude REAL,
 		longitude REAL,
-		path TEXT PRIMARY KEY NOT NULL)""")
+		path TEXT NOT NULL)""")
 c.execute("DROP TABLE IF EXISTS comments")
 c.execute("""CREATE TABLE IF NOT EXISTS comments(
+		id TEXT PRIMARY KEY,
 		post REFERENCES posts(ID),
 		zid TEXT REFERENCES Orders(ID),
 		created_at TEXT,
 		message TEXT,
-		path TEXT PRIMARY KEY NOT NULL)""")
+		path TEXT NOT NULL)""")
 c.execute("DROP TABLE IF EXISTS replies")
 c.execute("""CREATE TABLE IF NOT EXISTS replies(
+		id TEXT PRIMARY KEY,
 		comment REFERENCES comments(ID),
 		zid TEXT REFERENCES users(ID),
 		created_at TEXT,
 		message TEXT,
-		path TEXT PRIMARY KEY NOT NULL)""")
+		path TEXT NOT NULL)""")
 
 students_dir = "static/dataset-small"
 
@@ -94,25 +97,7 @@ while pathlib.Path(os.path.join(students_dir, zid, "%d.txt" % post_counter)).is_
 	# open the post, divide contents into hash
 	with open(os.path.join(students_dir, zid, "%d.txt" % post_counter)) as f:
 		post = f.readlines()
-	print(os.path.join(students_dir, zid, "%d.txt" % post_counter))
-	# # set path to comment: static/dataset-small/z5191824/x-y.txt
-	# while pathlib.Path(os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))).is_file():
-	# 	# print("found comment %d on post %d" % (comment_counter, post_counter))
-	# 	reply_counter = 0
-	# 	# open the comment, divide contents into hash
-	# 	with open(os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))) as f:
-	# 		comment = divideDetailsIntoHash(f.readlines())
-	# 	comment["replies"] = []
-	# 	# set path to comment: static/dataset-small/z5191824/x-y-z.txt
-	# 	while pathlib.Path(os.path.join(students_dir, zid, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))).is_file():
-	# 		# print("found reply %d on comment %d on post %d" % (reply_counter, comment_counter, post_counter))
-	# 		# open the reply, divide contents into hash
-	# 		with open(os.path.join(students_dir, zid, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))) as f:
-	# 			reply = divideDetailsIntoHash(f.readlines())
-	# 		comment["replies"].append(reply)
-	# 		reply_counter+=1
-	# 	post["comments"].append(comment)
-	# 	comment_counter+=1
+	# create posts
 	for line in post:
 		if 'zid: ' in line:
 			zid = line.split(': ')[1]
@@ -124,7 +109,37 @@ while pathlib.Path(os.path.join(students_dir, zid, "%d.txt" % post_counter)).is_
 			latitude = line.split(': ')[1]
 		if 'longitude: ' in line:
 			longitude = line.split(': ')[1]
-	c.execute("INSERT INTO posts (zid, created_at, message, latitude, longitude, path) VALUES (?, ?, ?, ?, ?, ?)", (zid, created_at, message, latitude, longitude, os.path.join(students_dir, zid, "%d.txt" % post_counter)))
+	post_id = str(uuid.uuid4()).replace('-','');
+	c.execute("INSERT INTO posts (id, zid, created_at, message, latitude, longitude, path) VALUES (?, ?, ?, ?, ?, ?, ?)", (post_id, zid, created_at, message, latitude, longitude, os.path.join(students_dir, zid, "%d.txt" % post_counter)))
+
+	# set path to comment: static/dataset-small/z5191824/x-y.txt
+	while pathlib.Path(os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))).is_file():
+		reply_counter = 0
+		# open the comment, divide contents into hash
+		with open(os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))) as f:
+			comment = f.readlines()
+
+		for line in comment:
+			if 'zid: ' in line:
+				zid = line.split(': ')[1]
+			if 'time: ' in line:
+				created_at = line.split(': ')[1]
+			if 'message: ' in line:
+				message = line.split(': ')[1]
+		comment_id = str(uuid.uuid4()).replace('-','');
+		c.execute("INSERT INTO comments (id, post, zid, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (comment_id, post_id, zid, created_at, message,os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))))
+
+
+		# set path to comment: static/dataset-small/z5191824/x-y-z.txt
+	# 	while pathlib.Path(os.path.join(students_dir, zid, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))).is_file():
+	# 		# print("found reply %d on comment %d on post %d" % (reply_counter, comment_counter, post_counter))
+	# 		# open the reply, divide contents into hash
+	# 		with open(os.path.join(students_dir, zid, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))) as f:
+	# 			reply = divideDetailsIntoHash(f.readlines())
+	# 		comment["replies"].append(reply)
+	# 		reply_counter+=1
+	# 	post["comments"].append(comment)
+		comment_counter+=1
 	post_counter+=1
 
 
