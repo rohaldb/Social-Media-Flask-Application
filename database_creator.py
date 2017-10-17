@@ -23,54 +23,51 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
 		courses VARCHAR(100))""")
 c.execute("DROP TABLE IF EXISTS posts")
 c.execute("""CREATE TABLE IF NOT EXISTS posts(
-		zid TEXT NOT NULL,
+		zid TEXT REFERENCES Orders(ID),
 		created_at TEXT,
-		post_message TEXT,
-		post_latitude REAL,
-		post_longitude REAL,
-		post_path TEXT PRIMARY KEY NOT NULL)""")
+		message TEXT,
+		latitude REAL,
+		longitude REAL,
+		path TEXT PRIMARY KEY NOT NULL)""")
 c.execute("DROP TABLE IF EXISTS comments")
 c.execute("""CREATE TABLE IF NOT EXISTS comments(
-		zid TEXT NOT NULL,
+		zid TEXT REFERENCES Orders(ID),
 		created_at TEXT,
-		comment_message TEXT,
-		comment_path TEXT PRIMARY KEY NOT NULL)""")
+		message TEXT,
+		path TEXT PRIMARY KEY NOT NULL)""")
 c.execute("DROP TABLE IF EXISTS replies")
 c.execute("""CREATE TABLE IF NOT EXISTS replies(
-		zid TEXT NOT NULL,
+		zid TEXT REFERENCES users(ID),
 		created_at TEXT,
-		reply_message TEXT,
-		reply_path TEXT PRIMARY KEY NOT NULL)""")
+		message TEXT,
+		path TEXT PRIMARY KEY NOT NULL)""")
 
 students_dir = "static/dataset-small"
 
 for zid in sorted(os.listdir(students_dir)):
 	with open(os.path.join(students_dir, zid, "student.txt")) as f:
 		user_details = f.readlines()
-
-	print(zid)
 	#get user image or set to default
 	image_path = os.path.join(students_dir, zid, "img.jpg")
 	if not pathlib.Path(image_path).is_file():
 		image_path = "static/images/defaultprofile.png"
-
 	for line in user_details:
 		if 'name: ' in line:
-			name = line.rstrip('\n').split(': ')[1]
+			name = line.split(': ')[1]
 		if 'program: ' in line:
-			program = line.rstrip('\n').split(': ')[1]
+			program = line.split(': ')[1]
 		if 'birthday: ' in line:
-			birthday = line.rstrip('\n').split(': ')[1]
+			birthday = line.split(': ')[1]
 		if 'home_suburb: ' in line:
-			suburb = line.rstrip('\n').split(': ')[1]
+			suburb = line.split(': ')[1]
 		if 'email: ' in line:
-			email = line.rstrip('\n').split(': ')[1]
+			email = line.split(': ')[1]
 		if 'password: ' in line:
-			password = line.rstrip('\n').split(': ')[1]
+			password = line.split(': ')[1]
 		if 'home_latitude: ' in line:
-			home_latitude = line.rstrip('\n').split(': ')[1]
+			home_latitude = line.split(': ')[1]
 		if 'home_longitude: ' in line:
-			home_longitude = line.rstrip('\n').split(': ')[1]
+			home_longitude = line.split(': ')[1]
 		if 'friends: ' in line:
 			friends = re.search(r'\((.*)\)', line)
 			friends = friends.group(1)
@@ -78,10 +75,6 @@ for zid in sorted(os.listdir(students_dir)):
 			courses = line
 
 	c.execute("INSERT INTO users (zid, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (zid, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses))
-
-conn.commit()
-c.close()
-conn.close()
 
 def divideDetailsIntoHash(details):
     hash = {}
@@ -123,3 +116,8 @@ def divideDetailsIntoHash(details):
 # 	pcr.append(post)
 # 	post_counter+=1
 # print(pcr)
+
+
+conn.commit()
+c.close()
+conn.close()
