@@ -34,6 +34,7 @@ def student(z_id):
 
 def divideDetailsIntoHash(details):
     hash = {}
+    # for each line, place a:b into format hash[a] = b;
     for line in details:
         split_string = line.split(':', 1)
         hash[split_string[0]] = split_string[1]

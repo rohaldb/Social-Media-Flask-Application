@@ -1,14 +1,14 @@
-{% extends "base.html" %}
-
-{% block body_contents %}
+{% extends "base.html" %} {% block body_contents %}
 <div class="">
 
   <h3>Student details:</h3>
-  {% for attr in public_attrs %}
-      <p><b>{{ attr }}</b>:{{ details[attr] }}</p>
+  {% for key, value in details.iteritems() %}
+    {% if key in public_attrs and value %}
+      <p><b>{{ key }}</b>:{{ value }}</p>
+    {% endif %}
   {% endfor %}
 
-  <img src="{{image_filename}}" width="250px">
+  <img src="{{image_filename}}">
 
 </div>
 {% endblock %}
