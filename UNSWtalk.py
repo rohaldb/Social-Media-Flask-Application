@@ -17,14 +17,18 @@ app = Flask(__name__)
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
 def start():
-    n = session.get('n', 0)
-    students = sorted(os.listdir(students_dir))
-    student_to_show = students[n % len(students)]
-    details_filename = os.path.join(students_dir, student_to_show, "student.txt")
+    return render_template('start.html')
+
+@app.route('/<z_id>', methods=['GET','POST'])
+def student(z_id):
+    # n = session.get('n', 0)
+    # students = sorted(os.listdir(students_dir))
+    # student_to_show = students[n % len(students)]
+    details_filename = os.path.join(students_dir, z_id, "student.txt")
     with open(details_filename) as f:
         details = f.read()
-    session['n'] = n + 1
-    return render_template('start.html', student_details=details)
+    # session['n'] = n + 1
+    return render_template('profile.html', student_details=details)
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)
