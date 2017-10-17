@@ -4,11 +4,10 @@
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
-import os
-import re
+import os, re, pathlib
 from flask import Flask, render_template, session
 
-students_dir = "dataset-small";
+students_dir = "static/dataset-small";
 
 app = Flask(__name__)
 
@@ -27,16 +26,18 @@ def student(z_id):
     # student_to_show = students[n % len(students)]
     # session['n'] = n + 1
     details_filename = os.path.join(students_dir, z_id, "student.txt")
+    image_filename = os.path.join(students_dir, z_id, "img.jpg")
+    if not pathlib.Path(image_filename).is_file(): image_filename = ""
+    print("imgae filename = ", image_filename)
     with open(details_filename) as f:
         details = divideDetailsIntoHash(f.readlines())
-    return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"])
+    return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"], image_filename=image_filename)
 
 def divideDetailsIntoHash(details):
     hash = {}
     for line in details:
         split_string = line.split(':', 1)
         hash[split_string[0]] = split_string[1]
-    print(hash)
     return hash
 
 if __name__ == '__main__':
