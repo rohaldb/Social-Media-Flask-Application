@@ -1,14 +1,24 @@
 {% extends "base.html" %} {% block body_contents %}
 <div class="">
 
-  <h3>Student details:</h3>
-  {% for key, value in details.iteritems() %}
-    {% if key in public_attrs and value %}
-      <p><b>{{ key }}</b>:{{ value }}</p>
-    {% endif %}
-  {% endfor %}
+    <h3>Student details:</h3>
+    {% for key, value in details.iteritems() %}
+        {% if key in public_attrs and value %}
+        <p><b>{{ key }}</b>:{{ value }}</p>
+        {% endif %}
+    {% endfor %}
 
-  <img src="{{image_filename}}">
+    <img src="{{image_filename}}">
+
+    <h3>Posts, comments, replies</h3>
+    {% for item in pcr %}
+        {% for key, value in item.iteritems() %}
+            {% if not key == "comments" %}
+                <p><b>{{ key }}</b>:{{ value }}</p>
+            {% endif %}
+        {% endfor %}
+        <hr>
+    {% endfor %}
 
 </div>
 {% endblock %}

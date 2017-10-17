@@ -33,9 +33,8 @@ def student(z_id):
     image_filename = os.path.join(students_dir, z_id, "img.jpg")
     if not pathlib.Path(image_filename).is_file(): image_filename = "static/images/defaultprofile.png"
     # get the posts, comments and replies.
-    pcr = getPCR()
-
-    return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"], image_filename=image_filename)
+    pcr = getPCR(z_id)
+    return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"], image_filename=image_filename, pcr=pcr)
 
 # returns nested objects of posts comments and replies.
 # [
@@ -50,30 +49,40 @@ def student(z_id):
 #     }
 #   }
 # ]
-def getPCR():
-    for student in sorted(os.listdir(students_dir)):
-        print(student)
-        post_counter = 0
-        # set path to comment: static/dataset-small/z5191824/0.txt
-        post_path =  os.path.join(students_dir, student, "%d.txt" % post_counter)
-        print("initial %s" % post_path)
-        while pathlib.Path(post_path).is_file():
-            print("found post %d" % post_counter)
-            comment_counter = 0
-            comment_path =  os.path.join(students_dir, student, "%d-%d.txt" % (post_counter, comment_counter))
-            while pathlib.Path(comment_path).is_file():
-                print("found comment %d on post %d" % (comment_counter, post_counter))
-                reply_counter = 0
-                reply_path = os.path.join(students_dir, student, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))
-                while pathlib.Path(reply_path).is_file():
-                    print("found reply %d on comment %d on post %d" % (reply_counter, comment_counter, post_counter))
-                    reply_counter+=1
-                    reply_path = os.path.join(students_dir, student, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))
-                comment_counter+=1
-                comment_path =  os.path.join(students_dir, student, "%d-%d.txt" % (post_counter, comment_counter))
-            post_counter+=1
-            post_path =  os.path.join(students_dir, student, "%d.txt" % post_counter)
-    return 11
+def getPCR(z_id):
+    pcr = []
+    post_counter = 0
+    pcr.append
+    # set path to post: static/dataset-small/z5191824/x.txt
+    while pathlib.Path(os.path.join(students_dir, z_id, "%d.txt" % post_counter)).is_file():
+        # print("found post %d" % post_counter)
+        comment_counter = 0
+        # open the post, divide contents into hash
+        with open(os.path.join(students_dir, z_id, "%d.txt" % post_counter)) as f:
+            post = divideDetailsIntoHash(f.readlines())
+        post["comments"] = []
+        # set path to comment: static/dataset-small/z5191824/x-y.txt
+        while pathlib.Path(os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))).is_file():
+            # print("found comment %d on post %d" % (comment_counter, post_counter))
+            reply_counter = 0
+            # open the comment, divide contents into hash
+            with open(os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))) as f:
+                comment = divideDetailsIntoHash(f.readlines())
+            comment["replies"] = []
+            # set path to comment: static/dataset-small/z5191824/x-y-z.txt
+            while pathlib.Path(os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))).is_file():
+                # print("found reply %d on comment %d on post %d" % (reply_counter, comment_counter, post_counter))
+                # open the reply, divide contents into hash
+                with open(os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))) as f:
+                    reply = divideDetailsIntoHash(f.readlines())
+                comment["replies"].append(reply)
+                reply_counter+=1
+            post["comments"].append(comment)
+            comment_counter+=1
+        pcr.append(post)
+        post_counter+=1
+    print(pcr)
+    return pcr
 
 def divideDetailsIntoHash(details):
     hash = {}
