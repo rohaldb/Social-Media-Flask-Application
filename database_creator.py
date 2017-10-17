@@ -5,11 +5,12 @@
 import sqlite3, glob, os, re, pathlib, uuid
 import shutil
 conn = sqlite3.connect('database.db')
+conn.text_factory = str
 c = conn.cursor()
 
 c.execute("DROP TABLE IF EXISTS users")
 c.execute("""CREATE TABLE IF NOT EXISTS users(
-		zid TEXT PRIMARY KEY NOT NULL,
+		z_id TEXT PRIMARY KEY NOT NULL,
 		name TEXT,
 		program TEXT,
 		birthday TEXT,
@@ -24,7 +25,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
 c.execute("DROP TABLE IF EXISTS posts")
 c.execute("""CREATE TABLE IF NOT EXISTS posts(
 		id TEXT PRIMARY KEY,
-		zid TEXT REFERENCES Orders(ID),
+		sender TEXT REFERENCES Orders(ID),
 		created_at TEXT,
 		message TEXT,
 		latitude REAL,
@@ -34,7 +35,7 @@ c.execute("DROP TABLE IF EXISTS comments")
 c.execute("""CREATE TABLE IF NOT EXISTS comments(
 		id TEXT PRIMARY KEY,
 		post REFERENCES posts(ID),
-		zid TEXT REFERENCES Orders(ID),
+		sender TEXT REFERENCES Orders(ID),
 		created_at TEXT,
 		message TEXT,
 		path TEXT NOT NULL)""")
@@ -42,18 +43,19 @@ c.execute("DROP TABLE IF EXISTS replies")
 c.execute("""CREATE TABLE IF NOT EXISTS replies(
 		id TEXT PRIMARY KEY,
 		comment REFERENCES comments(ID),
-		zid TEXT REFERENCES users(ID),
+		sender TEXT REFERENCES users(ID),
 		created_at TEXT,
 		message TEXT,
 		path TEXT NOT NULL)""")
 
 students_dir = "static/dataset-small"
 
-for zid in sorted(os.listdir(students_dir)):
-	with open(os.path.join(students_dir, zid, "student.txt")) as f:
+for z_id in sorted(os.listdir(students_dir)):
+	print(z_id)
+	with open(os.path.join(students_dir, z_id, "student.txt")) as f:
 		user_details = f.readlines()
 	#get user image or set to default
-	image_path = os.path.join(students_dir, zid, "img.jpg")
+	image_path = os.path.join(students_dir, z_id, "img.jpg")
 	if not pathlib.Path(image_path).is_file():
 		image_path = "static/images/defaultprofile.png"
 	for line in user_details:
@@ -79,68 +81,67 @@ for zid in sorted(os.listdir(students_dir)):
 		if 'courses: ' in line:
 			courses = line
 
-	c.execute("INSERT INTO users (zid, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (zid, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses))
+	c.execute("INSERT INTO users (z_id, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (z_id, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses))
 
-# def divideDetailsIntoHash(details):
-#     hash = {}
-#     # for each line, place a:b into format hash[a] = b;
-#     for line in details:
-#         split_string = line.split(': ', 1)
-#         hash[split_string[0]] = split_string[1]
-#     return hash
-
-post_counter = 0
-# set path to post: static/dataset-small/z5191824/x.txt
-while pathlib.Path(os.path.join(students_dir, zid, "%d.txt" % post_counter)).is_file():
-	# print("found post %d" % post_counter)
-	comment_counter = 0
-	# open the post, divide contents into hash
-	with open(os.path.join(students_dir, zid, "%d.txt" % post_counter)) as f:
-		post = f.readlines()
-	# create posts
-	for line in post:
-		if 'zid: ' in line:
-			zid = line.split(': ')[1]
-		if 'time: ' in line:
-			created_at = line.split(': ')[1]
-		if 'message: ' in line:
-			message = line.split(': ')[1]
-		if 'latitude: ' in line:
-			latitude = line.split(': ')[1]
-		if 'longitude: ' in line:
-			longitude = line.split(': ')[1]
-	post_id = str(uuid.uuid4()).replace('-','');
-	c.execute("INSERT INTO posts (id, zid, created_at, message, latitude, longitude, path) VALUES (?, ?, ?, ?, ?, ?, ?)", (post_id, zid, created_at, message, latitude, longitude, os.path.join(students_dir, zid, "%d.txt" % post_counter)))
-
-	# set path to comment: static/dataset-small/z5191824/x-y.txt
-	while pathlib.Path(os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))).is_file():
-		reply_counter = 0
-		# open the comment, divide contents into hash
-		with open(os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))) as f:
-			comment = f.readlines()
-
-		for line in comment:
-			if 'zid: ' in line:
-				zid = line.split(': ')[1]
+	post_counter = 0
+	# set path to post: static/dataset-small/z5191824/x.txt
+	while pathlib.Path(os.path.join(students_dir, z_id, "%d.txt" % post_counter)).is_file():
+		# print("found post %d" % post_counter)
+		comment_counter = 0
+		# open the post, and store in db
+		with open(os.path.join(students_dir, z_id, "%d.txt" % post_counter)) as f:
+			post = f.readlines()
+		# create posts
+		for line in post:
+			if 'z_id: ' in line:
+				z_id = line.split(': ')[1]
 			if 'time: ' in line:
 				created_at = line.split(': ')[1]
 			if 'message: ' in line:
 				message = line.split(': ')[1]
-		comment_id = str(uuid.uuid4()).replace('-','');
-		c.execute("INSERT INTO comments (id, post, zid, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (comment_id, post_id, zid, created_at, message,os.path.join(students_dir, zid, "%d-%d.txt" % (post_counter, comment_counter))))
+			if 'latitude: ' in line:
+				latitude = line.split(': ')[1]
+			if 'longitude: ' in line:
+				longitude = line.split(': ')[1]
+		post_id = str(uuid.uuid4()).replace('-','');
+		c.execute("INSERT INTO posts (id, sender, created_at, message, latitude, longitude, path) VALUES (?, ?, ?, ?, ?, ?, ?)", (post_id, z_id, created_at, message, latitude, longitude, os.path.join(students_dir, z_id, "%d.txt" % post_counter)))
+
+		# set path to comment: static/dataset-small/z5191824/x-y.txt
+		while pathlib.Path(os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))).is_file():
+			reply_counter = 0
+			# open the comment, and store in db
+			with open(os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))) as f:
+				comment = f.readlines()
+
+			for line in comment:
+				if 'z_id: ' in line:
+					z_id = line.split(': ')[1]
+				if 'time: ' in line:
+					created_at = line.split(': ')[1]
+				if 'message: ' in line:
+					message = line.split(': ')[1]
+			comment_id = str(uuid.uuid4()).replace('-','');
+			c.execute("INSERT INTO comments (id, post, sender, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (comment_id, post_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))))
 
 
-		# set path to comment: static/dataset-small/z5191824/x-y-z.txt
-	# 	while pathlib.Path(os.path.join(students_dir, zid, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))).is_file():
-	# 		# print("found reply %d on comment %d on post %d" % (reply_counter, comment_counter, post_counter))
-	# 		# open the reply, divide contents into hash
-	# 		with open(os.path.join(students_dir, zid, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))) as f:
-	# 			reply = divideDetailsIntoHash(f.readlines())
-	# 		comment["replies"].append(reply)
-	# 		reply_counter+=1
-	# 	post["comments"].append(comment)
-		comment_counter+=1
-	post_counter+=1
+			# set path to comment: static/dataset-small/z5191824/x-y-z.txt
+			while pathlib.Path(os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))).is_file():
+				# open the reply, and store in db
+				with open(os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))) as f:
+					reply = f.readlines()
+				for line in reply:
+					if 'z_id: ' in line:
+						z_id = line.split(': ')[1]
+					if 'time: ' in line:
+						created_at = line.split(': ')[1]
+					if 'message: ' in line:
+						message = line.split(': ')[1]
+				reply_id = str(uuid.uuid4()).replace('-','');
+				c.execute("INSERT INTO replies (id, comment, sender, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (reply_id, comment_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))))
+
+				reply_counter+=1
+			comment_counter+=1
+		post_counter+=1
 
 
 
