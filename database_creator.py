@@ -2,7 +2,7 @@
 # creates the database
 
 
-import sqlite3, glob, os, re
+import sqlite3, glob, os, re, pathlib
 import shutil
 conn = sqlite3.connect('database.db')
 c = conn.cursor()
@@ -42,39 +42,44 @@ c.execute("""CREATE TABLE IF NOT EXISTS replies(
 		reply_message TEXT,
 		reply_path TEXT PRIMARY KEY NOT NULL)""")
 
-students_dir = "static/dataset-small";
+students_dir = "static/dataset-small"
 
 for zid in sorted(os.listdir(students_dir)):
-    with open(os.path.join(students_dir, zid, "student.txt")) as f:
-        user_details = f.readlines()
+	with open(os.path.join(students_dir, zid, "student.txt")) as f:
+		user_details = f.readlines()
+
 	print(zid)
+	#get user image or set to default
+	image_path = os.path.join(students_dir, zid, "img.jpg")
+	if not pathlib.Path(image_path).is_file():
+		image_path = "static/images/defaultprofile.png"
+
 	for line in user_details:
-			if 'name: ' in line:
-				name = line.rstrip('\n').split(': ')[1]
-			if 'program: ' in line:
-				program = line.rstrip('\n').split(': ')[1]
-			if 'birthday: ' in line:
-				birthday = line.rstrip('\n').split(': ')[1]
-			if 'home_suburb: ' in line:
-				suburb = line.rstrip('\n').split(': ')[1]
-			if 'email: ' in line:
-				email = line.rstrip('\n').split(': ')[1]
-			if 'password: ' in line:
-				password = line.rstrip('\n').split(': ')[1]
-			if 'home_latitude: ' in line:
-				home_latitude = line.rstrip('\n').split(': ')[1]
-			if 'home_longitude: ' in line:
-				home_longitude = line.rstrip('\n').split(': ')[1]
-			if 'friends: ' in line:
-				friends = re.search(r'\((.*)\)', line)
-				friends = friends.group(1)
-			if 'courses: ' in line:
-				courses = line
-	c.execute("INSERT INTO users (zid, name, program, birthday, suburb, email, password, latitude, longitude, friends, courses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (zid, name, program, birthday, suburb, email, password, home_latitude, home_longitude, friends, courses))
+		if 'name: ' in line:
+			name = line.rstrip('\n').split(': ')[1]
+		if 'program: ' in line:
+			program = line.rstrip('\n').split(': ')[1]
+		if 'birthday: ' in line:
+			birthday = line.rstrip('\n').split(': ')[1]
+		if 'home_suburb: ' in line:
+			suburb = line.rstrip('\n').split(': ')[1]
+		if 'email: ' in line:
+			email = line.rstrip('\n').split(': ')[1]
+		if 'password: ' in line:
+			password = line.rstrip('\n').split(': ')[1]
+		if 'home_latitude: ' in line:
+			home_latitude = line.rstrip('\n').split(': ')[1]
+		if 'home_longitude: ' in line:
+			home_longitude = line.rstrip('\n').split(': ')[1]
+		if 'friends: ' in line:
+			friends = re.search(r'\((.*)\)', line)
+			friends = friends.group(1)
+		if 'courses: ' in line:
+			courses = line
+
+	c.execute("INSERT INTO users (zid, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (zid, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses))
 
 conn.commit()
-
-
 c.close()
 conn.close()
 

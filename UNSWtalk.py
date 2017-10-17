@@ -30,11 +30,11 @@ def student(z_id):
     with open(os.path.join(students_dir, z_id, "student.txt")) as f:
         details = divideDetailsIntoHash(f.readlines())
     # get the users image and set to default if it doesnt exist
-    image_filename = os.path.join(students_dir, z_id, "img.jpg")
-    if not pathlib.Path(image_filename).is_file(): image_filename = "static/images/defaultprofile.png"
+    image_path = os.path.join(students_dir, z_id, "img.jpg")
+    if not pathlib.Path(image_path).is_file(): image_path = "static/images/defaultprofile.png"
     # get the posts, comments and replies.
     pcr = getPCR(z_id)
-    return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"], image_filename=image_filename, pcr=pcr)
+    return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"], image_path=image_path, pcr=pcr)
 
 # returns nested objects of posts comments and replies.
 # [
