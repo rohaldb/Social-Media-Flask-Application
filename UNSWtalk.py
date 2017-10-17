@@ -7,7 +7,7 @@
 import os
 from flask import Flask, render_template, session
 
-students_dir = "dataset-medium";
+students_dir = "dataset-small";
 
 app = Flask(__name__)
 
