@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block body_contents %}
+{% extends "layout.html" %} {% block body_contents %}
   <img src="{{image_path}}">
   {% for key, value in user_details.iteritems() %}
       {% if key in public_attrs and value %}

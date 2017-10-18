@@ -5,7 +5,7 @@
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
 import os, re, pathlib, sqlite3
-from flask import Flask, render_template, session, g
+from flask import Flask, render_template, session, g, request
 
 students_dir = "static/dataset-small";
 DATABASE = 'database.db'
@@ -35,6 +35,12 @@ def after_request(response):
 @app.route('/start', methods=['GET','POST'])
 def start():
     return render_template('start.html')
+
+@app.route('/search', methods=['GET','POST'])
+def search():
+    search_query = request.form.get('search_query', '')
+    matched_users = query_db("select * from users where z_id like ?", [search_query])
+    return render_template('search.html', matched_users=matched_users)
 
 @app.route('/<z_id>', methods=['GET','POST'])
 def student(z_id):
