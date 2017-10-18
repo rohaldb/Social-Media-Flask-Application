@@ -82,7 +82,8 @@ for z_id in sorted(os.listdir(students_dir)):
 			friends = re.search(r'\((.*)\)', line)
 			friends = friends.group(1)
 		if 'courses: ' in line:
-			courses = line
+			courses = re.search(r'\((.*)\)', line)
+			courses = courses.group(1)
 	#store in database
 	c.execute("INSERT INTO users (z_id, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (z_id, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses))
 

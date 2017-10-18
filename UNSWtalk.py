@@ -8,6 +8,7 @@ import os, re, pathlib
 from flask import Flask, render_template, session
 
 students_dir = "static/dataset-small";
+DATABASE = '/path/to/database.db'
 
 app = Flask(__name__)
 
