@@ -52,16 +52,18 @@ def getUserDetails(z_id):
     return query_db("select * from users where z_id=?", [z_id], one=True)
 
 
+# gets the comments, posts and replies for a user
 def getPCR(z_id):
     pcr = []
+    # itterate over posts
     for post in query_db("select * from posts where user=?", [z_id]):
-        # print(post)
+        # get the comments for each post
         post["comments"] = []
         for comment in query_db("select * from comments where post=?", [post["id"]]):
-            # print(comment)
+            # get the replies for each comment
             comment["replies"] = []
             for reply in query_db("select * from replies where comment=?", [comment["id"]]):
-                # print(reply)
+                # append to parent objects
                 comment["replies"].append(reply)
             post["comments"].append(comment)
         pcr.append(post)
