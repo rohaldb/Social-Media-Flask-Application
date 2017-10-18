@@ -1,1 +1,6 @@
-05/10/17	18:00	18:15	put the first real entry in diary.txt (delete this line!)
+Date: 17/10
+Start: 1pm
+Stop: 6pm
+Activity: Set up / coding
+Comments: set up, begin conversion of data into database
+------------------------------------------------
