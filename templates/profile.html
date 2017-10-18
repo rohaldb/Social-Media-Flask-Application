@@ -19,7 +19,7 @@
           </div>
         </div>
             {% for comment in post["comments"]%}
-                    <div class="card card-outline-success mb-3 text-center">
+                    <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
                       <div class="card-block">
                         <blockquote class="card-blockquote">
                           <p>{{ comment["message"]}}</p>
@@ -28,7 +28,7 @@
                       </div>
                     </div>
                   {% for reply in comment["replies"]%}
-                        <div class="card card-outline-warning mb-3 text-center">
+                        <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
                           <div class="card-block">
                             <blockquote class="card-blockquote">
                               <p>{{ reply["message"]}}</p>
