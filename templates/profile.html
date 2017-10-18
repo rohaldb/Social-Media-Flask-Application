@@ -6,7 +6,13 @@
       {% endif %}
   {% endfor %}
 
-<h3>Posts, comments, replies</h3>
+  <h3>Friends</h3>
+  {% for friend in friends %}
+    <a href="/{{friend['z_id']}}">{{friend["name"]}}</a>
+    <a href="/{{friend['z_id']}}"><img src="{{friend['image_path']}}" width="100px"></a>
+  {% endfor %}
+
+  <h3>Posts, comments, replies</h3>
   <div class="row">
       {% for post in pcr %}
       <div class="col-xs-12">

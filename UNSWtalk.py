@@ -42,12 +42,23 @@ def student(z_id):
     user_details = getUserDetails(z_id)
     # get the posts, comments and replies.
     pcr = getPCR(z_id)
-    return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcr=pcr)
+    # get the users friend details
+    friends = getFriends(user_details)
+    return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcr=pcr, friends=friends)
 
 # gets a users personal details
 def getUserDetails(z_id):
     a = query_db("select * from users where z_id=?", [z_id], one=True)
     return a
+
+#gets all of a users friends
+def getFriends(user_details):
+    friends = []
+    friend_ids = re.split(r"\s*,\s*", user_details["friends"])
+    for friend_id in friend_ids:
+        friend_data = query_db("select * from users where z_id=?", [friend_id], one=True)
+        friends.append(friend_data)
+    return friends
 
 # gets the comments, posts and replies for a user
 def getPCR(z_id):
