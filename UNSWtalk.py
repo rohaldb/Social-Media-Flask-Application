@@ -12,42 +12,32 @@ DATABASE = 'database.db'
 
 app = Flask(__name__)
 
+# DATABASE FUNCTIONS
 def connect_db():
     return sqlite3.connect(DATABASE)
-
+#database open conn
 @app.before_request
 def before_request():
     g.db = connect_db()
-
+#database query func
 def query_db(query, args=(), one=False):
     cur = g.db.execute(query, args)
     rv = [dict((cur.description[idx][0], value)
                for idx, value in enumerate(row)) for row in cur.fetchall()]
     return (rv[0] if rv else None) if one else rv
-
+# close conn
 @app.after_request
 def after_request(response):
     g.db.close()
     return response
 
-
-# Show unformatted details for student "n"
-# Increment n and store it in the session cookie
-
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
 def start():
-    for user in query_db('select * from comments'):
-        print user['message']
     return render_template('start.html')
 
 @app.route('/<z_id>', methods=['GET','POST'])
 def student(z_id):
-    # n = session.get('n', 0)
-    # students = sorted(os.listdir(students_dir))
-    # student_to_show = students[n % len(students)]
-    # session['n'] = n + 1
-
     # get the users details
     with open(os.path.join(students_dir, z_id, "student.txt")) as f:
         details = divideDetailsIntoHash(f.readlines())
@@ -58,61 +48,24 @@ def student(z_id):
     pcr = getPCR(z_id)
     return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"], image_path=image_path, pcr=pcr)
 
-# returns nested objects of posts comments and replies.
-# [
-#   }
-#     text:
-#     date:...
-#     comments: {
-#       date..
-#       replies: {
-#
-#       }
-#     }
-#   }
-# ]
+def getUserDetails(z_id):
+    return query_db("select * from users where z_id=?", [z_id], one=True)
+
+
 def getPCR(z_id):
     pcr = []
-    post_counter = 0
-    pcr.append
-    # set path to post: static/dataset-small/z5191824/x.txt
-    while pathlib.Path(os.path.join(students_dir, z_id, "%d.txt" % post_counter)).is_file():
-        # print("found post %d" % post_counter)
-        comment_counter = 0
-        # open the post, divide contents into hash
-        with open(os.path.join(students_dir, z_id, "%d.txt" % post_counter)) as f:
-            post = divideDetailsIntoHash(f.readlines())
+    for post in query_db("select * from posts where user=?", [z_id]):
+        # print(post)
         post["comments"] = []
-        # set path to comment: static/dataset-small/z5191824/x-y.txt
-        while pathlib.Path(os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))).is_file():
-            # print("found comment %d on post %d" % (comment_counter, post_counter))
-            reply_counter = 0
-            # open the comment, divide contents into hash
-            with open(os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))) as f:
-                comment = divideDetailsIntoHash(f.readlines())
+        for comment in query_db("select * from comments where post=?", [post["id"]]):
+            # print(comment)
             comment["replies"] = []
-            # set path to comment: static/dataset-small/z5191824/x-y-z.txt
-            while pathlib.Path(os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))).is_file():
-                # print("found reply %d on comment %d on post %d" % (reply_counter, comment_counter, post_counter))
-                # open the reply, divide contents into hash
-                with open(os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))) as f:
-                    reply = divideDetailsIntoHash(f.readlines())
+            for reply in query_db("select * from replies where comment=?", [comment["id"]]):
+                # print(reply)
                 comment["replies"].append(reply)
-                reply_counter+=1
             post["comments"].append(comment)
-            comment_counter+=1
         pcr.append(post)
-        post_counter+=1
-    print(pcr)
     return pcr
-
-def divideDetailsIntoHash(details):
-    hash = {}
-    # for each line, place a:b into format hash[a] = b;
-    for line in details:
-        split_string = line.split(': ', 1)
-        hash[split_string[0]] = split_string[1]
-    return hash
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)

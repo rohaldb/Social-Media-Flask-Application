@@ -26,7 +26,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
 c.execute("DROP TABLE IF EXISTS posts")
 c.execute("""CREATE TABLE IF NOT EXISTS posts(
 		id TEXT PRIMARY KEY,
-		sender TEXT REFERENCES Orders(ID),
+		user TEXT REFERENCES Orders(ID),
 		created_at TEXT,
 		message TEXT,
 		latitude REAL,
@@ -36,7 +36,7 @@ c.execute("DROP TABLE IF EXISTS comments")
 c.execute("""CREATE TABLE IF NOT EXISTS comments(
 		id TEXT PRIMARY KEY,
 		post REFERENCES posts(ID),
-		sender TEXT REFERENCES Orders(ID),
+		user TEXT REFERENCES Orders(ID),
 		created_at TEXT,
 		message TEXT,
 		path TEXT NOT NULL)""")
@@ -44,7 +44,7 @@ c.execute("DROP TABLE IF EXISTS replies")
 c.execute("""CREATE TABLE IF NOT EXISTS replies(
 		id TEXT PRIMARY KEY,
 		comment REFERENCES comments(ID),
-		sender TEXT REFERENCES users(ID),
+		user TEXT REFERENCES users(ID),
 		created_at TEXT,
 		message TEXT,
 		path TEXT NOT NULL)""")
@@ -109,7 +109,7 @@ for z_id in sorted(os.listdir(students_dir)):
 				longitude = line.split(': ')[1]
 		#generate uuid
 		post_id = str(uuid.uuid4()).replace('-','');
-		c.execute("INSERT INTO posts (id, sender, created_at, message, latitude, longitude, path) VALUES (?, ?, ?, ?, ?, ?, ?)", (post_id, z_id, created_at, message, latitude, longitude, os.path.join(students_dir, z_id, "%d.txt" % post_counter)))
+		c.execute("INSERT INTO posts (id, user, created_at, message, latitude, longitude, path) VALUES (?, ?, ?, ?, ?, ?, ?)", (post_id, z_id, created_at, message, latitude, longitude, os.path.join(students_dir, z_id, "%d.txt" % post_counter)))
 
 		# look for comments on post
 		# set path to comment: static/dataset-small/z5191824/x-y.txt
@@ -127,7 +127,7 @@ for z_id in sorted(os.listdir(students_dir)):
 				if 'message: ' in line:
 					message = line.split(': ')[1]
 			comment_id = str(uuid.uuid4()).replace('-','');
-			c.execute("INSERT INTO comments (id, post, sender, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (comment_id, post_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))))
+			c.execute("INSERT INTO comments (id, post, user, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (comment_id, post_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))))
 
 			# look for replies on comment
 			# set path to comment: static/dataset-small/z5191824/x-y-z.txt
@@ -143,7 +143,7 @@ for z_id in sorted(os.listdir(students_dir)):
 					if 'message: ' in line:
 						message = line.split(': ')[1]
 				reply_id = str(uuid.uuid4()).replace('-','');
-				c.execute("INSERT INTO replies (id, comment, sender, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (reply_id, comment_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))))
+				c.execute("INSERT INTO replies (id, comment, user, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (reply_id, comment_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))))
 				reply_counter+=1
 			comment_counter+=1
 		post_counter+=1
