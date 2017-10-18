@@ -4,13 +4,32 @@
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
-import os, re, pathlib
-from flask import Flask, render_template, session
+import os, re, pathlib, sqlite3
+from flask import Flask, render_template, session, g
 
 students_dir = "static/dataset-small";
-DATABASE = '/path/to/database.db'
+DATABASE = 'database.db'
 
 app = Flask(__name__)
+
+def connect_db():
+    return sqlite3.connect(DATABASE)
+
+@app.before_request
+def before_request():
+    g.db = connect_db()
+
+def query_db(query, args=(), one=False):
+    cur = g.db.execute(query, args)
+    rv = [dict((cur.description[idx][0], value)
+               for idx, value in enumerate(row)) for row in cur.fetchall()]
+    return (rv[0] if rv else None) if one else rv
+
+@app.after_request
+def after_request(response):
+    g.db.close()
+    return response
+
 
 # Show unformatted details for student "n"
 # Increment n and store it in the session cookie
@@ -18,6 +37,8 @@ app = Flask(__name__)
 @app.route('/', methods=['GET','POST'])
 @app.route('/start', methods=['GET','POST'])
 def start():
+    for user in query_db('select * from comments'):
+        print user['message']
     return render_template('start.html')
 
 @app.route('/<z_id>', methods=['GET','POST'])
