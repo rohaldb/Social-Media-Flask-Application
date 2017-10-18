@@ -39,18 +39,15 @@ def start():
 @app.route('/<z_id>', methods=['GET','POST'])
 def student(z_id):
     # get the users details
-    with open(os.path.join(students_dir, z_id, "student.txt")) as f:
-        details = divideDetailsIntoHash(f.readlines())
-    # get the users image and set to default if it doesnt exist
-    image_path = os.path.join(students_dir, z_id, "img.jpg")
-    if not pathlib.Path(image_path).is_file(): image_path = "static/images/defaultprofile.png"
+    user_details = getUserDetails(z_id)
     # get the posts, comments and replies.
     pcr = getPCR(z_id)
-    return render_template('profile.html', details=details, public_attrs=["program", "zid", "birthday", "full_name", "friends"], image_path=image_path, pcr=pcr)
+    return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcr=pcr)
 
+# gets a users personal details
 def getUserDetails(z_id):
-    return query_db("select * from users where z_id=?", [z_id], one=True)
-
+    a = query_db("select * from users where z_id=?", [z_id], one=True)
+    return a
 
 # gets the comments, posts and replies for a user
 def getPCR(z_id):

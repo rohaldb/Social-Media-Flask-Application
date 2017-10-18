@@ -63,21 +63,21 @@ for z_id in sorted(os.listdir(students_dir)):
 	# extract user profile data
 	for line in user_details:
 		if 'name: ' in line:
-			name = line.split(': ')[1]
+			name = line.rstrip('\n').split(': ')[1]
 		if 'program: ' in line:
-			program = line.split(': ')[1]
+			program = line.rstrip('\n').split(': ')[1]
 		if 'birthday: ' in line:
-			birthday = line.split(': ')[1]
+			birthday = line.rstrip('\n').split(': ')[1]
 		if 'home_suburb: ' in line:
-			suburb = line.split(': ')[1]
+			suburb = line.rstrip('\n').split(': ')[1]
 		if 'email: ' in line:
-			email = line.split(': ')[1]
+			email = line.rstrip('\n').split(': ')[1]
 		if 'password: ' in line:
-			password = line.split(': ')[1]
+			password = line.rstrip('\n').split(': ')[1]
 		if 'home_latitude: ' in line:
-			home_latitude = line.split(': ')[1]
+			home_latitude = line.rstrip('\n').split(': ')[1]
 		if 'home_longitude: ' in line:
-			home_longitude = line.split(': ')[1]
+			home_longitude = line.rstrip('\n').split(': ')[1]
 		if 'friends: ' in line:
 			friends = re.search(r'\((.*)\)', line)
 			friends = friends.group(1)
@@ -98,15 +98,15 @@ for z_id in sorted(os.listdir(students_dir)):
 		# extract data and save to database
 		for line in post:
 			if 'z_id: ' in line:
-				z_id = line.split(': ')[1]
+				z_id = line.rstrip('\n').split(': ')[1]
 			if 'time: ' in line:
-				created_at = line.split(': ')[1]
+				created_at = line.rstrip('\n').split(': ')[1]
 			if 'message: ' in line:
-				message = line.split(': ')[1]
+				message = line.rstrip('\n').split(': ')[1]
 			if 'latitude: ' in line:
-				latitude = line.split(': ')[1]
+				latitude = line.rstrip('\n').split(': ')[1]
 			if 'longitude: ' in line:
-				longitude = line.split(': ')[1]
+				longitude = line.rstrip('\n').split(': ')[1]
 		#generate uuid
 		post_id = str(uuid.uuid4()).replace('-','');
 		c.execute("INSERT INTO posts (id, user, created_at, message, latitude, longitude, path) VALUES (?, ?, ?, ?, ?, ?, ?)", (post_id, z_id, created_at, message, latitude, longitude, os.path.join(students_dir, z_id, "%d.txt" % post_counter)))
@@ -121,11 +121,11 @@ for z_id in sorted(os.listdir(students_dir)):
 
 			for line in comment:
 				if 'z_id: ' in line:
-					z_id = line.split(': ')[1]
+					z_id = line.rstrip('\n').split(': ')[1]
 				if 'time: ' in line:
-					created_at = line.split(': ')[1]
+					created_at = line.rstrip('\n').split(': ')[1]
 				if 'message: ' in line:
-					message = line.split(': ')[1]
+					message = line.rstrip('\n').split(': ')[1]
 			comment_id = str(uuid.uuid4()).replace('-','');
 			c.execute("INSERT INTO comments (id, post, user, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (comment_id, post_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))))
 
@@ -137,11 +137,11 @@ for z_id in sorted(os.listdir(students_dir)):
 					reply = f.readlines()
 				for line in reply:
 					if 'z_id: ' in line:
-						z_id = line.split(': ')[1]
+						z_id = line.rstrip('\n').split(': ')[1]
 					if 'time: ' in line:
-						created_at = line.split(': ')[1]
+						created_at = line.rstrip('\n').split(': ')[1]
 					if 'message: ' in line:
-						message = line.split(': ')[1]
+						message = line.rstrip('\n').split(': ')[1]
 				reply_id = str(uuid.uuid4()).replace('-','');
 				c.execute("INSERT INTO replies (id, comment, user, created_at, message, path) VALUES (?, ?, ?, ?, ?, ?)", (reply_id, comment_id, z_id, created_at, message,os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))))
 				reply_counter+=1

@@ -2,7 +2,7 @@
 <div class="">
 
     <h3>Student details:</h3>
-    {% for key, value in details.iteritems() %}
+    {% for key, value in user_details.iteritems() %}
         {% if key in public_attrs and value %}
         <p><b>{{ key }}</b>:{{ value }}</p>
         {% endif %}
