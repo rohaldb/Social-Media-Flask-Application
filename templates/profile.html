@@ -1,24 +1,33 @@
 {% extends "base.html" %} {% block body_contents %}
-<div class="">
+  <!-- <div class="row">
+    <div class="col-xs-12">
+        <div class="card col-xs-12" style="width: 20rem;">
+        <img class="card-img-top" src="{{image_path}}">
+        <div class="card-block">
+          <h4 class="card-title">Student details</h4>
+          {% for key, value in user_details.iteritems() %}
+              {% if key in public_attrs and value %}
+              <p class="card-text"><b>{{ key }}</b>:{{ value }}</p>
+              {% endif %}
+          {% endfor %}
+        </div>
+  </div> -->
 
-    <h3>Student details:</h3>
-    {% for key, value in user_details.iteritems() %}
-        {% if key in public_attrs and value %}
-        <p><b>{{ key }}</b>:{{ value }}</p>
-        {% endif %}
-    {% endfor %}
 
-    <img src="{{image_path}}">
-
+  <div class="row">
     <h3>Posts, comments, replies</h3>
-    {% for item in pcr %}
-        {% for key, value in item.iteritems() %}
-            {% if not key == "comments" %}
-                <p><b>{{ key }}</b>:{{ value }}</p>
-            {% endif %}
-        {% endfor %}
+    <div class="col-xs-12">
+      {% for post in pcr %}
+            <p style="border:1px solid red;">{{ post["message"]}}</p>
+            {% for comment in post["comments"]%}
+                  <p style="border: 1px solid blue;">{{ comment["message"]}}</p>
+                  {% for reply in comment["replies"]%}
+                        <p style="border: 1px solid green;">{{ reply["message"]}}</p>
+                  {% endfor %}
+            {% endfor %}
         <hr>
-    {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
 
-</div>
 {% endblock %}
