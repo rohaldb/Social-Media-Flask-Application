@@ -6,11 +6,10 @@
       {% endif %}
   {% endfor %}
 
-
+<h3>Posts, comments, replies</h3>
   <div class="row">
-    <div class="col-xs-12">
-    <h3>Posts, comments, replies</h3>
       {% for post in pcr %}
+      <div class="col-xs-12">
         <div class="card card-outline-primary mb-3 text-center">
           <div class="card-block">
             <blockquote class="card-blockquote">
@@ -20,7 +19,7 @@
           </div>
         </div>
             {% for comment in post["comments"]%}
-                    <div class="card card-outline-warning mb-3 text-center">
+                    <div class="card card-outline-success mb-3 text-center">
                       <div class="card-block">
                         <blockquote class="card-blockquote">
                           <p>{{ comment["message"]}}</p>
@@ -29,7 +28,14 @@
                       </div>
                     </div>
                   {% for reply in comment["replies"]%}
-                        <p style="margin-left: 100px; border: 1px solid green;">{{ reply["message"]}}</p>
+                        <div class="card card-outline-warning mb-3 text-center">
+                          <div class="card-block">
+                            <blockquote class="card-blockquote">
+                              <p>{{ reply["message"]}}</p>
+                              <footer>{{ reply["created_at"]}}</footer>
+                            </blockquote>
+                          </div>
+                        </div>
                   {% endfor %}
             {% endfor %}
       {% endfor %}
