@@ -61,9 +61,9 @@ def getPCR(z_id):
             comment["replies"] = []
             for reply in query_db("select * from replies where comment=?", [comment["id"]]):
                 # append to parent objects
-                comment["replies"].append(reply)
-            post["comments"].append(comment)
-        pcr.append(post)
+                comment["replies"].insert(0,reply)
+            post["comments"].insert(0,comment)
+        pcr.insert(0,post)
     return pcr
 
 if __name__ == '__main__':

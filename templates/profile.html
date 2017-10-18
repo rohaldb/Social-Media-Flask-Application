@@ -1,31 +1,37 @@
 {% extends "base.html" %} {% block body_contents %}
-  <!-- <div class="row">
-    <div class="col-xs-12">
-        <div class="card col-xs-12" style="width: 20rem;">
-        <img class="card-img-top" src="{{image_path}}">
-        <div class="card-block">
-          <h4 class="card-title">Student details</h4>
-          {% for key, value in user_details.iteritems() %}
-              {% if key in public_attrs and value %}
-              <p class="card-text"><b>{{ key }}</b>:{{ value }}</p>
-              {% endif %}
-          {% endfor %}
-        </div>
-  </div> -->
+  <img src="{{image_path}}">
+  {% for key, value in user_details.iteritems() %}
+      {% if key in public_attrs and value %}
+      <p><b>{{ key }}</b>:{{ value }}</p>
+      {% endif %}
+  {% endfor %}
 
 
   <div class="row">
-    <h3>Posts, comments, replies</h3>
     <div class="col-xs-12">
+    <h3>Posts, comments, replies</h3>
       {% for post in pcr %}
-            <p style="border:1px solid red;">{{ post["message"]}}</p>
+        <div class="card card-outline-primary mb-3 text-center">
+          <div class="card-block">
+            <blockquote class="card-blockquote">
+              <p>{{ post["message"]}}</p>
+              <footer>{{ post["created_at"]}}</footer>
+            </blockquote>
+          </div>
+        </div>
             {% for comment in post["comments"]%}
-                  <p style="border: 1px solid blue;">{{ comment["message"]}}</p>
+                    <div class="card card-outline-warning mb-3 text-center">
+                      <div class="card-block">
+                        <blockquote class="card-blockquote">
+                          <p>{{ comment["message"]}}</p>
+                          <footer>{{ comment["created_at"]}}</footer>
+                        </blockquote>
+                      </div>
+                    </div>
                   {% for reply in comment["replies"]%}
-                        <p style="border: 1px solid green;">{{ reply["message"]}}</p>
+                        <p style="margin-left: 100px; border: 1px solid green;">{{ reply["message"]}}</p>
                   {% endfor %}
             {% endfor %}
-        <hr>
       {% endfor %}
     </div>
   </div>
