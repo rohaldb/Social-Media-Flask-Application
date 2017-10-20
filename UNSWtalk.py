@@ -61,8 +61,8 @@ def search():
     matched_users = query_db("select * from users where z_id like ?", [search_query])
     return render_template('search.html', matched_users=matched_users)
 
-@app.route('/<z_id>', methods=['GET','POST'])
-def student(z_id):
+@app.route('/profile/<z_id>', methods=['GET','POST'])
+def profile(z_id):
     # get the users details
     user_details = getUserDetails(z_id)
     # get the posts, comments and replies.
