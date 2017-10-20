@@ -3,13 +3,13 @@
 # written by andrewt@cse.unsw.edu.au October 2017
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
+# return redirect("/login", code=302)
 
 import os, re, pathlib, sqlite3
-from flask import Flask, render_template, session, g, request,redirect
+from flask import Flask, render_template, session, g, request, redirect, make_response
 
 students_dir = "static/dataset-small";
 DATABASE = 'database.db'
-current_user = None
 
 
 app = Flask(__name__)
@@ -35,24 +35,24 @@ def after_request(response):
 
 @app.route('/', methods=['GET','POST'])
 def start():
-    # if not current_user:
-    #     return redirect("/login", code=302)
-    # else:
-        return render_template('start.html')
+    # user = request.cookies.get('user')
+    # print("current user from start is ")
+    # print(user)
+    return render_template('start.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
     username = request.form.get('email', '')
     password = request.form.get('password', '')
-    print(username)
-    print(password)
     user = query_db("select * from users where email=? and password=?", [username, password], one=True)
     if user:
-        current_user = user
-        return redirect("/", code=302)
+        print(user)
+        response = make_response(redirect("/"))
+        response.set_cookie('user', user["z_id"])
+        return response
     else:
-        print("unknown details")
-        return render_template('login.html')
+        response = make_response(render_template('login.html'))
+        return response
 
 
 @app.route('/search', methods=['GET','POST'])
