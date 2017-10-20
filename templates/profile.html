@@ -1,6 +1,6 @@
 {% extends "layout.html" %} {% block body_contents %}
-  <img src="{{image_path}}">
-  {% for key, value in user_details.iteritems() %}
+  <img src="{{url_for('static', filename=image_path)}}">
+  {% for key, value in user_details.items() %}
       {% if key in public_attrs and value %}
       <p><b>{{ key }}</b>:{{ value }}</p>
       {% endif %}
@@ -8,8 +8,8 @@
 
   <h3>Friends</h3>
   {% for friend in friends %}
-    <a href="/{{friend['z_id']}}">{{friend["name"]}}</a>
-    <a href="/{{friend['z_id']}}"><img src="{{friend['image_path']}}" width="100px"></a>
+    <a href="{{url_for('profile', z_id=friend['z_id'])}}">{{friend["name"]}}</a>
+    <a href="{{url_for('profile', z_id=friend['z_id'])}}"><img src="{{url_for('static', filename=friend['image_path'])}}" width="100px"></a>
   {% endfor %}
 
   <h3>Posts, comments, replies</h3>

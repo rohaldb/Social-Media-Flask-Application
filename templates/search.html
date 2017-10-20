@@ -2,7 +2,7 @@
 
 {% block body_contents %}
   {% for user in matched_users%}
-  <a href="/{{user['z_id']}}">{{user["name"]}}</a>
-  <a href="/{{user['z_id']}}"><img src="{{user['image_path']}}"></a>
+  <a href="{{url_for('profile', z_id=user['z_id'])}}">{{user["name"]}}</a>
+  <a href="{{url_for('profile', z_id=user['z_id'])}}"><img src="{{url_for('static', filename=user['image_path'])}}"></a>
   {% endfor %}
-{% endblock %}
+{% endblock %}user['z_id']

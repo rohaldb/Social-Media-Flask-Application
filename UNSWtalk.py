@@ -1,14 +1,16 @@
-#!/usr/local/bin/python3.6
+#!/web/cs2041/bin/python3.6.3
 
 # written by andrewt@cse.unsw.edu.au October 2017
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
 
 import os, re, pathlib, sqlite3
-from flask import Flask, render_template, session, g, request
+from flask import Flask, render_template, session, g, request,redirect
 
 students_dir = "static/dataset-small";
 DATABASE = 'database.db'
+current_user = None
+
 
 app = Flask(__name__)
 
@@ -32,9 +34,26 @@ def after_request(response):
     return response
 
 @app.route('/', methods=['GET','POST'])
-@app.route('/start', methods=['GET','POST'])
 def start():
-    return render_template('start.html')
+    # if not current_user:
+    #     return redirect("/login", code=302)
+    # else:
+        return render_template('start.html')
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    username = request.form.get('email', '')
+    password = request.form.get('password', '')
+    print(username)
+    print(password)
+    user = query_db("select * from users where email=? and password=?", [username, password], one=True)
+    if user:
+        current_user = user
+        return redirect("/", code=302)
+    else:
+        print("unknown details")
+        return render_template('login.html')
+
 
 @app.route('/search', methods=['GET','POST'])
 def search():
@@ -42,8 +61,8 @@ def search():
     matched_users = query_db("select * from users where z_id like ?", [search_query])
     return render_template('search.html', matched_users=matched_users)
 
-@app.route('/<z_id>', methods=['GET','POST'])
-def student(z_id):
+@app.route('/profile/<z_id>', methods=['GET','POST'])
+def profile(z_id):
     # get the users details
     user_details = getUserDetails(z_id)
     # get the posts, comments and replies.
@@ -54,8 +73,10 @@ def student(z_id):
 
 # gets a users personal details
 def getUserDetails(z_id):
-    a = query_db("select * from users where z_id=?", [z_id], one=True)
-    return a
+	a = query_db("select * from users where z_id=?", [z_id], one=True)
+	print("find me ben")
+	print(z_id)
+	return a
 
 #gets all of a users friends
 def getFriends(user_details):

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.5
+#!/web/cs2041/bin/python3.6.3
 # creates the database
 
 
@@ -57,9 +57,10 @@ for z_id in sorted(os.listdir(students_dir)):
 	with open(os.path.join(students_dir, z_id, "student.txt")) as f:
 		user_details = f.readlines()
 	#get user image or set to default
-	image_path = os.path.join(students_dir, z_id, "img.jpg")
-	if not pathlib.Path(image_path).is_file():
-		image_path = "static/images/defaultprofile.png"
+	image_path = os.path.join("dataset-small", z_id, "img.jpg")
+	print('static/%s' % image_path)
+	if not pathlib.Path('static/%s' % image_path).is_file():
+		image_path = "images/defaultprofile.png"
 	# extract user profile data
 	for line in user_details:
 		if 'name: ' in line:
