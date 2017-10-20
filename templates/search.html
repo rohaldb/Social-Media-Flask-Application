@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block body_contents %}
+  {% for user in matched_users%}
+  <p>{{user["z_id"]}}</p>
+  <a href="{{user['z_id']}}">{{user["name"]}}</a>
+  <a href="{{user['z_id']}}"><img src="{{user['image_path']}}"></a>
+  {% endfor %}
+{% endblock %}user['z_id']

@@ -1,0 +1,51 @@
+{% extends "layout.html" %} {% block body_contents %}
+  <img src="{{image_path}}">
+  {% for key, value in user_details.items() %}
+      {% if key in public_attrs and value %}
+      <p><b>{{ key }}</b>:{{ value }}</p>
+      {% endif %}
+  {% endfor %}
+
+  <h3>Friends</h3>
+  {% for friend in friends %}
+    <a href="{{friend['z_id']}}">{{friend["name"]}}</a>
+    <a href="{{friend['z_id']}}"><img src="{{friend['image_path']}}" width="100px"></a>
+  {% endfor %}
+
+  <h3>Posts, comments, replies</h3>
+  <div class="row">
+      {% for post in pcr %}
+      <div class="col-xs-12">
+        <div class="card card-outline-primary mb-3 text-center">
+          <div class="card-block">
+            <blockquote class="card-blockquote">
+              <p>{{ post["message"]}}</p>
+              <footer>{{ post["created_at"]}}</footer>
+            </blockquote>
+          </div>
+        </div>
+            {% for comment in post["comments"]%}
+                    <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
+                      <div class="card-block">
+                        <blockquote class="card-blockquote">
+                          <p>{{ comment["message"]}}</p>
+                          <footer>{{ comment["created_at"]}}</footer>
+                        </blockquote>
+                      </div>
+                    </div>
+                  {% for reply in comment["replies"]%}
+                        <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
+                          <div class="card-block">
+                            <blockquote class="card-blockquote">
+                              <p>{{ reply["message"]}}</p>
+                              <footer>{{ reply["created_at"]}}</footer>
+                            </blockquote>
+                          </div>
+                        </div>
+                  {% endfor %}
+            {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+{% endblock %}
