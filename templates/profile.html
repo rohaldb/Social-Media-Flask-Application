@@ -11,7 +11,6 @@
     <a href="{{url_for('profile', z_id=friend['z_id'])}}">{{friend["name"]}}</a>
     <a href="{{url_for('profile', z_id=friend['z_id'])}}"><img src="{{url_for('static', filename=friend['image_path'])}}" width="100px"></a>
   {% endfor %}
-
   <h3>Posts, comments, replies</h3>
   <div class="row">
       {% for post in pcr %}
@@ -28,7 +27,7 @@
                     <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
                       <div class="card-block">
                         <blockquote class="card-blockquote">
-                          <p>{{ comment["message"]}}</p>
+                          <p>{{ comment["message"] | safe }}</p>
                           <footer>{{ comment["created_at"]}}</footer>
                         </blockquote>
                       </div>
@@ -37,7 +36,7 @@
                         <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
                           <div class="card-block">
                             <blockquote class="card-blockquote">
-                              <p>{{ reply["message"]}}</p>
+                              <p>{{ reply["message"] | safe}}</p>
                               <footer>{{ reply["created_at"]}}</footer>
                             </blockquote>
                           </div>

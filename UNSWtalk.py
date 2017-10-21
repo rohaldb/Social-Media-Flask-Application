@@ -10,6 +10,7 @@ import re
 import pathlib
 import sqlite3
 from flask import Flask, render_template, session, g, request, redirect, make_response, url_for, flash
+from datetime import datetime
 
 students_dir = "static/dataset-small"
 DATABASE = 'database.db'
@@ -93,9 +94,9 @@ def search():
 @app.route('/profile/<z_id>', methods=['GET', 'POST'])
 def profile(z_id):
     # redirect back to login if not authenticated
-    if not "current_user" in session:
-        flash("You must be logged in to access that page")
-        return redirect(url_for("login"))
+    # if not "current_user" in session:
+    #     flash("You must be logged in to access that page")
+    #     return redirect(url_for("login"))
 
     # get the users details
     user_details = getUserDetails(z_id)
@@ -130,18 +131,38 @@ def getPCR(z_id):
     pcr = []
     # itterate over posts
     for post in query_db("select * from posts where user=?", [z_id]):
+        sanitizePCR(post)
         # get the comments for each post
         post["comments"] = []
         for comment in query_db("select * from comments where post=?", [post["id"]]):
+            sanitizePCR(comment)
             # get the replies for each comment
             comment["replies"] = []
             for reply in query_db("select * from replies where comment=?", [comment["id"]]):
+                sanitizePCR(reply)
                 # append to parent objects
                 comment["replies"].insert(0, reply)
             post["comments"].insert(0, comment)
         pcr.insert(0, post)
     return pcr
 
+def sanitizePCR(object):
+    sanitizeTime(object)
+    replaceTagsWithLinks(object)
+
+def sanitizeTime(object):
+    # remove time zone because cant get working with %z and convert to datetime
+    time =  datetime.strptime(object["created_at"][:-5],'%Y-%m-%dT%H:%M:%S')
+    # update to desired format
+    object["created_at"] = datetime.strftime(time, ' %H:%M:%S, %a %d %m %Y')
+
+def replaceTagsWithLinks(object):
+    text = object["message"]
+    # find all instances of zXXXXXXX and replace with link
+    for match in re.findall(r"\b(z\d{7})\b", text):
+        url = url_for('profile', z_id=match)
+        text = text.replace(match, "<a href='%s'>%s</a>" % (url, match))
+    object["message"] = text
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)
