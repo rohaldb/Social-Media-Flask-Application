@@ -166,12 +166,9 @@ def home():
     feed = list({v['id']:v for v in feed}.values())
     return render_template('home.html', feed=friends_content)
 
-# gets 5 most recent posts that a user has made
-
-
-def getRecentPostsOfUser(z_id):
-    posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", [z_id])
-    return posts
+# def getRecentPostsOfUser(z_id):
+#     posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", [z_id])
+#     return posts
 
 
 def getCommentsAndRepliesOfPosts(posts):

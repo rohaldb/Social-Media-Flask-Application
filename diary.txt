@@ -22,3 +22,9 @@ Stop: 12pm
 Activity: coding
 Comments: set up authentication
 ------------------------------------------------
+Date: 21/10
+Start: 1am
+Stop: 6pm
+Activity: coding
+Comments: Feed information being pulled. Also had to add friends relational database
+------------------------------------------------
