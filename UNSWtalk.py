@@ -6,7 +6,7 @@
 # return redirect("/login", code=302)
 
 import os, re, pathlib, sqlite3
-from flask import Flask, render_template, session, g, request, redirect, make_response
+from flask import Flask, render_template, session, g, request, redirect, make_response, url_for, flash
 
 students_dir = "static/dataset-small";
 DATABASE = 'database.db'
@@ -34,7 +34,7 @@ def after_request(response):
     return response
 
 @app.route('/', methods=['GET','POST'])
-def start():
+def home():
     if "current_user" in session:
         print("current user from start is ")
         print(session["current_user"])
@@ -49,7 +49,7 @@ def login():
     user = query_db("select * from users where email=? and password=?", [username, password], one=True)
     if user:
         session["current_user"]  = user["z_id"]
-        response = make_response(redirect("/"))
+        response = make_response(redirect(url_for("home")))
         response.set_cookie('user', user["z_id"])
         return response
     else:
@@ -75,6 +75,10 @@ def search():
 
 @app.route('/profile/<z_id>', methods=['GET','POST'])
 def profile(z_id):
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+
     # get the users details
     user_details = getUserDetails(z_id)
     # get the posts, comments and replies.
@@ -83,11 +87,11 @@ def profile(z_id):
     friends = getFriends(user_details)
     return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcr=pcr, friends=friends)
 
+
+
 # gets a users personal details
 def getUserDetails(z_id):
 	a = query_db("select * from users where z_id=?", [z_id], one=True)
-	print("find me ben")
-	print(z_id)
 	return a
 
 #gets all of a users friends
@@ -98,6 +102,7 @@ def getFriends(user_details):
         friend_data = query_db("select * from users where z_id=?", [friend_id], one=True)
         friends.append(friend_data)
     return friends
+
 
 # gets the comments, posts and replies for a user
 def getPCR(z_id):
