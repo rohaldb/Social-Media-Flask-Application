@@ -28,6 +28,7 @@ def connect_db():
 def before_request():
     g.db = connect_db()
 
+
 def query_db(query, args=(), one=False):
     cur = g.db.execute(query, args)
     rv = [dict((cur.description[idx][0], value)
@@ -129,18 +130,22 @@ def getFriends(z_id):
 
 # gets the comments, posts and replies for a user
 def getPCRofUser(z_id):
-    posts = query_db("select * from posts where user=? order by created_at DESC", [z_id])
+    posts = query_db(
+        "select * from posts where user=? order by created_at DESC", [z_id])
     return getCommentsAndRepliesOfPosts(posts)
+
 
 def sanitizePCR(object):
     sanitizeTime(object)
     replaceTagsWithLinks(object)
 
+
 def sanitizeTime(object):
     # remove time zone because cant get working with %z and convert to datetime
-    time =  datetime.strptime(object["created_at"],'%Y-%m-%d %H:%M:%S')
+    time = datetime.strptime(object["created_at"], '%Y-%m-%d %H:%M:%S')
     # update to desired format
     object["created_at"] = datetime.strftime(time, ' %H:%M:%S, %a %d %m %Y')
+
 
 def replaceTagsWithLinks(object):
     text = object["message"]
@@ -150,21 +155,29 @@ def replaceTagsWithLinks(object):
         text = text.replace(match, "<a href='%s'>%s</a>" % (url, match))
     object["message"] = text
 
+
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     friends_content = getPCROfFriends("z5195935")
-    return render_template('home.html', friends_content=friends_content)
+    mentioned_posts = getPCROfMentions("z5195935")
+    users_post = getRecentPostsOfUser("z5195935")
+    feed = friends_content + mentioned_posts + users_post
+    # remove duplicated based on post id
+    feed = list({v['id']:v for v in feed}.values())
+    return render_template('home.html', feed=friends_content)
 
 # gets 5 most recent posts that a user has made
+
+
 def getRecentPostsOfUser(z_id):
-    posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", (z_id))
+    posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", [z_id])
     return posts
+
 
 def getCommentsAndRepliesOfPosts(posts):
     pcr = []
     # itterate over posts
     for post in posts:
-        print(post["created_at"])
         sanitizePCR(post)
         # get the comments for each post
         post["comments"] = []
@@ -180,11 +193,31 @@ def getCommentsAndRepliesOfPosts(posts):
         pcr.append(post)
     return pcr
 
-def getPCROfFriends(z_id):
-    friends_posts = query_db("select * from posts where user in(select friend from friends where reference='z5195935') order by created_at DESC")
-    friends_data = getCommentsAndRepliesOfPosts(friends_posts)
-    return friends_data
+# gets the posts comments and replies of a users friends
 
+
+def getPCROfFriends(z_id):
+    query = """select * from posts where user in
+    (select friend from friends where reference=?)
+     order by created_at DESC"""
+    friends_posts = query_db(query, [z_id])
+    return getCommentsAndRepliesOfPosts(friends_posts)
+
+
+
+# gets alll posts of posts comments or replies where a user is mentioned
+def getPCROfMentions(z_id):
+    # query to find all posts where the post, a comment or a reply contain the users id
+    query = """select * from posts p1 where
+p1.id in (
+	select id from posts p2 where p2.message like ?
+)  or p1.id in (
+	select post from comments c1 where c1.message like ?
+)  or p1.id in (
+	select post from replies p1 where p1.message like ?
+)  order by created_at desc"""
+    mentioned_posts = query_db(query, ['%'+z_id+'%', '%'+z_id+'%','%'+z_id+'%'])
+    return getCommentsAndRepliesOfPosts(mentioned_posts)
 
 
 if __name__ == '__main__':

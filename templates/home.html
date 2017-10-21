@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 {% block body_contents %}
 <div class="row">
-    {% for post in friends_content %}
+    {% for post in feed %}
     <div class="col-xs-12">
       <div class="card card-outline-primary mb-3 text-center">
         <div class="card-block">
           <blockquote class="card-blockquote">
             <p>{{ post["message"]}}</p>
-            <footer>{{ post["created_at"]}}</footer>
+            <small>posted by {{post["user"]}} at {{ post["created_at"]}}</small>
           </blockquote>
         </div>
       </div>
@@ -16,7 +16,7 @@
                     <div class="card-block">
                       <blockquote class="card-blockquote">
                         <p>{{ comment["message"] | safe }}</p>
-                        <footer>{{ comment["created_at"]}}</footer>
+                        <small>posted by {{comment["user"]}} at {{ comment["created_at"]}}</small>
                       </blockquote>
                     </div>
                   </div>
@@ -25,7 +25,7 @@
                         <div class="card-block">
                           <blockquote class="card-blockquote">
                             <p>{{ reply["message"] | safe}}</p>
-                            <footer>{{ reply["created_at"]}}</footer>
+                            <small>posted by {{reply["user"]}} at {{ reply["created_at"]}}</small>
                           </blockquote>
                         </div>
                       </div>
