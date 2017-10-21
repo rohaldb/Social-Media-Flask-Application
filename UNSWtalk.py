@@ -42,7 +42,7 @@ def after_request(response):
 
 
 @app.route('/', methods=['GET', 'POST'])
-def home():
+def landing():
     if "current_user" in session:
         print("current user from start is ")
         print(session["current_user"])
@@ -59,7 +59,7 @@ def login():
                     [username, password], one=True)
     if user:
         session["current_user"] = user["z_id"]
-        response = make_response(redirect(url_for("home")))
+        response = make_response(redirect(url_for("landing")))
         response.set_cookie('user', user["z_id"])
         return response
     else:
@@ -152,7 +152,8 @@ def sanitizePCR(object):
 
 def sanitizeTime(object):
     # remove time zone because cant get working with %z and convert to datetime
-    time =  datetime.strptime(object["created_at"][:-5],'%Y-%m-%dT%H:%M:%S')
+    print(object["created_at"])
+    time =  datetime.strptime(object["created_at"],'%Y-%m-%d %H:%M:%S')
     # update to desired format
     object["created_at"] = datetime.strftime(time, ' %H:%M:%S, %a %d %m %Y')
 
@@ -163,6 +164,11 @@ def replaceTagsWithLinks(object):
         url = url_for('profile', z_id=match)
         text = text.replace(match, "<a href='%s'>%s</a>" % (url, match))
     object["message"] = text
+
+# @app.route('/home', methods=['GET', 'POST'])
+# def home():
+
+
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)
