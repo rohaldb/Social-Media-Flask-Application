@@ -101,9 +101,9 @@ def profile(z_id):
     # get the users details
     user_details = getUserDetails(z_id)
     # get the posts, comments and replies.
-    pcr = getPCR(z_id)
+    pcr = getPCRofUser(z_id)
     # get the users friend details
-    friends = getFriends(user_details)
+    friends = getFriends(z_id)
     return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcr=pcr, friends=friends)
 
 # gets a users personal details
@@ -116,7 +116,8 @@ def getUserDetails(z_id):
 # gets all of a users friends
 
 
-def getFriends(user_details):
+def getFriends(z_id):
+    user_details = getUserDetails(z_id)
     friends = []
     friend_ids = re.split(r"\s*,\s*", user_details["friends"])
     for friend_id in friend_ids:
@@ -127,24 +128,9 @@ def getFriends(user_details):
 
 
 # gets the comments, posts and replies for a user
-def getPCR(z_id):
-    pcr = []
-    # itterate over posts
-    for post in query_db("select * from posts where user=?", [z_id]):
-        sanitizePCR(post)
-        # get the comments for each post
-        post["comments"] = []
-        for comment in query_db("select * from comments where post=?", [post["id"]]):
-            sanitizePCR(comment)
-            # get the replies for each comment
-            comment["replies"] = []
-            for reply in query_db("select * from replies where comment=?", [comment["id"]]):
-                sanitizePCR(reply)
-                # append to parent objects
-                comment["replies"].insert(0, reply)
-            post["comments"].insert(0, comment)
-        pcr.insert(0, post)
-    return pcr
+def getPCRofUser(z_id):
+    posts = query_db("select * from posts where user=? order by created_at DESC", [z_id])
+    return getCommentsAndRepliesOfPosts(posts)
 
 def sanitizePCR(object):
     sanitizeTime(object)
@@ -152,7 +138,6 @@ def sanitizePCR(object):
 
 def sanitizeTime(object):
     # remove time zone because cant get working with %z and convert to datetime
-    print(object["created_at"])
     time =  datetime.strptime(object["created_at"],'%Y-%m-%d %H:%M:%S')
     # update to desired format
     object["created_at"] = datetime.strftime(time, ' %H:%M:%S, %a %d %m %Y')
@@ -165,8 +150,40 @@ def replaceTagsWithLinks(object):
         text = text.replace(match, "<a href='%s'>%s</a>" % (url, match))
     object["message"] = text
 
-# @app.route('/home', methods=['GET', 'POST'])
-# def home():
+@app.route('/home', methods=['GET', 'POST'])
+def home():
+    friends_content = getPCROfFriends("z5195935")
+    return render_template('home.html', friends_content=friends_content)
+
+# gets 5 most recent posts that a user has made
+def getRecentPostsOfUser(z_id):
+    posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", (z_id))
+    return posts
+
+def getCommentsAndRepliesOfPosts(posts):
+    pcr = []
+    # itterate over posts
+    for post in posts:
+        print(post["created_at"])
+        sanitizePCR(post)
+        # get the comments for each post
+        post["comments"] = []
+        for comment in query_db("select * from comments where post=?", [post["id"]]):
+            sanitizePCR(comment)
+            # get the replies for each comment
+            comment["replies"] = []
+            for reply in query_db("select * from replies where comment=?", [comment["id"]]):
+                sanitizePCR(reply)
+                # append to parent objects
+                comment["replies"].append(reply)
+            post["comments"].append(comment)
+        pcr.append(post)
+    return pcr
+
+def getPCROfFriends(z_id):
+    friends_posts = query_db("select * from posts where user in(select friend from friends where reference='z5195935') order by created_at DESC")
+    friends_data = getCommentsAndRepliesOfPosts(friends_posts)
+    return friends_data
 
 
 

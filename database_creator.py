@@ -48,6 +48,11 @@ c.execute("""CREATE TABLE IF NOT EXISTS replies(
 		created_at DATE,
 		message TEXT,
 		path TEXT NOT NULL)""")
+c.execute("DROP TABLE IF EXISTS friends")
+c.execute("""CREATE TABLE IF NOT EXISTS friends(
+		reference TEXT NOT NULL,
+		friend TEXT NOT NULL
+		)""")
 
 students_dir = "static/dataset-small"
 
@@ -81,6 +86,9 @@ for z_id in sorted(os.listdir(students_dir)):
 		if 'friends: ' in line:
 			friends = re.search(r'\((.*)\)', line)
 			friends = friends.group(1)
+			friend_ids = re.split(r"\s*,\s*", friends)
+			for friend_id in friend_ids:
+				c.execute("INSERT INTO friends (reference, friend) VALUES (?, ?)", (z_id, friend_id))
 		if 'courses: ' in line:
 			courses = re.search(r'\((.*)\)', line)
 			courses = courses.group(1)
