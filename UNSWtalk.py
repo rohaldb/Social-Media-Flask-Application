@@ -55,28 +55,31 @@ def landing():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    username = request.form.get('email', '')
-    password = request.form.get('password', '')
-    user = query_db("select * from users where email=? and password=?",
-                    [username, password], one=True)
-    if user:
-        session["current_user"] = user["z_id"]
-        response = make_response(redirect(url_for("landing")))
-        response.set_cookie('user', user["z_id"])
-        return response
+    if request.method == 'POST':
+        username = request.form.get('email', '')
+        password = request.form.get('password', '')
+        user = query_db("select * from users where email=? and password=?",[username, password], one=True)
+        if user:
+            session["current_user"] = user["z_id"]
+            response = make_response(redirect(url_for("landing")))
+            response.set_cookie('user', user["z_id"])
+            return response
+        else:
+            flash("Unknown username or password")
+            response = make_response(render_template('login.html'))
+            return response
     else:
-        response = make_response(render_template('login.html'))
-        return response
+        return render_template('login.html')
 
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     if "current_user" in session:
         session.pop("current_user", None)
-        response = make_response(redirect("/"))
+        response = make_response(redirect(url_for('landing')))
         return response
     else:
-        response = make_response(redirect("/"))
+        response = make_response(redirect(url_for('landing')))
         return response
 
 
@@ -96,9 +99,9 @@ def search():
 @app.route('/profile/<z_id>', methods=['GET', 'POST'])
 def profile(z_id):
     # redirect back to login if not authenticated
-    # if not "current_user" in session:
-    #     flash("You must be logged in to access that page")
-    #     return redirect(url_for("login"))
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
 
     # get the users details
     user_details = getUserDetails(z_id)
