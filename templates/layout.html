@@ -1,44 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>unswtalk</title>
-<link href="{{url_for('static', filename='UNSWtalk.css')}}") rel="stylesheet">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <title>unswtalk</title>
+    <link href="{{url_for('static', filename='UNSWtalk.css')}}") rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 </head>
 <body>
-  <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <a class="navbar-brand" href="#">BenBook</a>
-      <form class="form-inline my-2 my-lg-0" action="{{url_for("search")}}" method="POST">
-        <input class="form-control mr-sm-2" type="text" name="search_query" placeholder="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-      </form>
+    <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="#">BenBook</a>
+        <form class="form-inline my-2 my-lg-0" action="{{url_for("search")}}" method="POST">
+            <input class="form-control mr-sm-2" type="text" name="search_query" placeholder="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
     </div>
-    {% if "current_user" in session%}
-      <form class="form-inline my-2 my-lg-0" action="{{url_for("logout")}}" method="POST">
+    {% if "current_user" in session %}
+    <form class="form-inline my-2 my-lg-0" action="{{url_for("logout")}}" method="POST">
         <button class="btn btn-outline-danger my-2 my-sm-0" type="submit">Log out</button>
-      </form>
+    </form>
+    {% else %}
+    <form class="form-inline my-2 my-lg-0" action="{{url_for("login")}}" method="POST">
+        <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Sign in</button>
+    </form>
     {% endif %}
-  </nav>
-  <div class="container">
-      {% with messages = get_flashed_messages() %}
-       {% if messages %}
-          {% for message in messages %}
-          <div class="alert alert-danger" role="alert">
-              <span>{{message}}</span>
-          </div>
-          {% endfor %}
-       {% endif %}
-      {% endwith %}
+</nav>
+<div class="container">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+        <span>{{message}}</span>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
 
-      {% block body_contents %}
-      {% endblock %}
-  </div>
+    {% block body_contents %}
+    {% endblock %}
+</div>
 
 </body>
 </html>
