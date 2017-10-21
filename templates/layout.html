@@ -19,6 +19,11 @@
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
       </form>
     </div>
+    {% if "current_user" in session%}
+      <form class="form-inline my-2 my-lg-0" action="{{url_for("logout")}}" method="POST">
+        <button class="btn btn-outline-danger my-2 my-sm-0" type="submit">Log out</button>
+      </form>
+    {% endif %}
   </nav>
   <div class="container">
       {% block body_contents %}

@@ -35,9 +35,11 @@ def after_request(response):
 
 @app.route('/', methods=['GET','POST'])
 def start():
-    # user = request.cookies.get('user')
-    # print("current user from start is ")
-    # print(user)
+    if "current_user" in session:
+        print("current user from start is ")
+        print(session["current_user"])
+    else:
+        print("aint no user bish")
     return render_template('start.html')
 
 @app.route('/login', methods=['GET','POST'])
@@ -46,12 +48,22 @@ def login():
     password = request.form.get('password', '')
     user = query_db("select * from users where email=? and password=?", [username, password], one=True)
     if user:
-        print(user)
+        session["current_user"]  = user["z_id"]
         response = make_response(redirect("/"))
         response.set_cookie('user', user["z_id"])
         return response
     else:
         response = make_response(render_template('login.html'))
+        return response
+
+@app.route('/logout', methods=['GET','POST'])
+def logout():
+    if "current_user" in session:
+        session.pop("current_user", None)
+        response = make_response(redirect("/"))
+        return response
+    else:
+        response = make_response(redirect("/"))
         return response
 
 
