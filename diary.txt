@@ -4,3 +4,21 @@ Stop: 6pm
 Activity: Set up / coding
 Comments: set up, begin conversion of data into database
 ------------------------------------------------
+Date: 18/10
+Start: 3pm
+Stop: 6pm
+Activity: coding
+Comments: finish database setup. Got comments, posts and rpelies displaying. Search worlking and friends being displayed.
+------------------------------------------------
+Date: 20/10
+Start: 3pm
+Stop: 5pm
+Activity: refactoring
+Comments: needed to fix routes and file structure so it would work on cse machines
+------------------------------------------------
+Date: 21/10
+Start: 10am
+Stop: 12pm
+Activity: coding
+Comments: set up authentication
+------------------------------------------------
