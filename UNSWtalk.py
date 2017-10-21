@@ -11,6 +11,7 @@ import pathlib
 import sqlite3
 from flask import Flask, render_template, session, g, request, redirect, make_response, url_for, flash
 from datetime import datetime
+from flask import Markup
 
 students_dir = "static/dataset-small"
 DATABASE = 'database.db'
@@ -138,6 +139,10 @@ def getPCRofUser(z_id):
 def sanitizePCR(object):
     sanitizeTime(object)
     replaceTagsWithLinks(object)
+    sanitizeNewLines(object)
+
+def sanitizeNewLines(object):
+    object["message"] = Markup(re.sub(r"\\n", "<br>", object["message"]))
 
 
 def sanitizeTime(object):
@@ -166,9 +171,9 @@ def home():
     feed = list({v['id']:v for v in feed}.values())
     return render_template('home.html', feed=friends_content)
 
-# def getRecentPostsOfUser(z_id):
-#     posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", [z_id])
-#     return posts
+def getRecentPostsOfUser(z_id):
+    posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", [z_id])
+    return posts
 
 
 def getCommentsAndRepliesOfPosts(posts):
