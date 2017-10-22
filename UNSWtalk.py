@@ -104,11 +104,17 @@ def search():
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-
+    # extract the thing we are searching for
     search_query = request.form.get('search_query', '')
-    matched_users = query_db(
-        "select * from users where z_id like ?", [search_query])
-    return render_template('search.html', matched_users=matched_users)
+    # find matched user
+    matched_users = query_db("select * from users where z_id like ?", ['%'+search_query+'%'])
+    # find matching pcrs
+    pcrs = getPCRThatMention(search_query)
+    # sort them by date
+    pcrs = sorted(pcrs, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
+    # sanitize them
+    for i in pcrs: sanitizePCR(i)
+    return render_template('search.html', matched_users=matched_users, pcrs=pcrs)
 
 
 @app.route('/profile/<z_id>', methods=['GET', 'POST'])
@@ -188,7 +194,7 @@ def home():
         return redirect(url_for("login"))
     # get the feed content, and set source and identifier so we can print appropriately on feed
     friends_content = setObjectSource(setObjectType(getFriendsPosts(session["current_user"]), "post"),"friend")
-    mentions = setObjectSource(getPCROfMentions(session["current_user"]), "mention")
+    mentions = setObjectSource(getPCRThatMention(session["current_user"]), "mention")
     users_posts = setObjectSource(setObjectType(getRecentPostsOfUser(session["current_user"]), "post"), "self")
     # group the elements into a single list
     feed = friends_content + users_posts + mentions
@@ -229,7 +235,7 @@ def getFriendsPosts(z_id):
 
 
 # gets alll posts of posts comments or replies where a user is mentioned
-def getPCROfMentions(z_id):
+def getPCRThatMention(z_id):
     # query to find all posts where the user is mentioned:
     post_query = "select * from posts where message like ? order by created_at desc"
     comment_query = "select * from comments where message like ? order by created_at desc"

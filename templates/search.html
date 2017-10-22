@@ -1,8 +1,37 @@
 {% extends "layout.html" %}
 
 {% block body_contents %}
+  <h1> Matched Users </h1>
   {% for user in matched_users%}
-  <a href="{{url_for('profile', z_id=user['z_id'])}}">{{user["name"]}}</a>
-  <a href="{{url_for('profile', z_id=user['z_id'])}}"><img src="{{url_for('static', filename=user['image_path'])}}"></a>
+  <div class="row">
+    <div class="col-sm-12">
+      <a href="{{url_for('profile', z_id=user['z_id'])}}">{{user["name"]}} ({{user["z_id"]}})</a>
+      <a href="{{url_for('profile', z_id=user['z_id'])}}"><img src="{{url_for('static', filename=user['image_path'])}}"></a>
+    </div>
+  </div>
+  {% endfor %}
+  {% for item in pcrs%}
+      {% if item["type"] == "post" %}
+        <div class="card card-outline-primary mb-3 text-center">
+          <div class="card-block">
+              <p>{{ item["message"]}}</p>
+              <small>posted at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small></small>
+          </div>
+        </div>
+    {% elif item["type"] == "comment" %}
+      <div class="card card-outline-warning mb-3 text-center">
+        <div class="card-block">
+            <p>{{ item["message"]}}</p>
+            <small>posted at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></small>
+        </div>
+      </div>
+    {% else %}
+      <div class="card card-outline-success mb-3 text-center">
+        <div class="card-block">
+            <p>{{ item["message"]}}</p>
+            <small>posted at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></small>
+        </div>
+      </div>
+    {% endif %}
   {% endfor %}
 {% endblock %}user['z_id']
