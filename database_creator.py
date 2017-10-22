@@ -106,7 +106,7 @@ for z_id in sorted(os.listdir(students_dir)):
 			post = f.readlines()
 		# extract data and save to database
 		for line in post:
-			if 'z_id: ' in line:
+			if 'from: ' in line:
 				z_id = line.rstrip('\n').split(': ')[1]
 			if 'time: ' in line:
 				created_at = line.rstrip('\n').split(': ')[1]
@@ -128,14 +128,14 @@ for z_id in sorted(os.listdir(students_dir)):
 				comment = f.readlines()
 
 			for line in comment:
-				if 'z_id: ' in line:
-					z_id = line.rstrip('\n').split(': ')[1]
+				if 'from: ' in line:
+					commenter_z_id = line.rstrip('\n').split(': ')[1]
 				if 'time: ' in line:
 					created_at = line.rstrip('\n').split(': ')[1]
 				if 'message: ' in line:
 					message = line.rstrip('\n').split(': ')[1]
 			comment_id = str(uuid.uuid4()).replace('-','');
-			c.execute("INSERT INTO comments (id, post, user, created_at, message, path) VALUES (?, ?, ?, DATETIME(?), ?, ?)", (comment_id, post_id, z_id, created_at[:-5], message,os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))))
+			c.execute("INSERT INTO comments (id, post, user, created_at, message, path) VALUES (?, ?, ?, DATETIME(?), ?, ?)", (comment_id, post_id, commenter_z_id, created_at[:-5], message,os.path.join(students_dir, z_id, "%d-%d.txt" % (post_counter, comment_counter))))
 
 			# look for replies on comment
 			# set path to comment: static/dataset-small/z5191824/x-y-z.txt
@@ -144,14 +144,14 @@ for z_id in sorted(os.listdir(students_dir)):
 				with open(os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))) as f:
 					reply = f.readlines()
 				for line in reply:
-					if 'z_id: ' in line:
-						z_id = line.rstrip('\n').split(': ')[1]
+					if 'from: ' in line:
+						replier_z_id = line.rstrip('\n').split(': ')[1]
 					if 'time: ' in line:
 						created_at = line.rstrip('\n').split(': ')[1]
 					if 'message: ' in line:
 						message = line.rstrip('\n').split(': ')[1]
 				reply_id = str(uuid.uuid4()).replace('-','');
-				c.execute("INSERT INTO replies (id, comment, user, created_at, post, message, path) VALUES (?, ?, ?, DATETIME(?), ?, ?, ?)", (reply_id, comment_id, z_id, created_at[:-5], post_id, message,os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))))
+				c.execute("INSERT INTO replies (id, comment, user, created_at, post, message, path) VALUES (?, ?, ?, DATETIME(?), ?, ?, ?)", (reply_id, comment_id, replier_z_id, created_at[:-5], post_id, message,os.path.join(students_dir, z_id, "%d-%d-%d.txt" % (post_counter, comment_counter, reply_counter))))
 				reply_counter+=1
 			comment_counter+=1
 		post_counter+=1

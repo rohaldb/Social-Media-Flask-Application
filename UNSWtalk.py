@@ -184,16 +184,20 @@ def replaceTagsWithLinks(object):
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
-    friends_content = getPCROfFriends("z5195935")
-    mentioned_posts = getPCROfMentions("z5195935")
-    users_post = getRecentPostsOfUser("z5195935")
-    feed = friends_content + mentioned_posts + users_post
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    friends_content = getFriendsPosts(session["current_user"])
+    mentions = getPCROfMentions(session["current_user"])
+    users_posts = getRecentPostsOfUser(session["current_user"])
+    # feed = friends_content + mentioned_posts + users_post
     # remove duplicated based on post id
-    feed = list({v['id']:v for v in feed}.values())
-    return render_template('home.html', feed=friends_content)
+    # feed = list({v['id']:v for v in feed}.values())
+    return render_template('home.html', friends_content=friends_content, mentions=mentions, users_posts=users_posts)
 
 def getRecentPostsOfUser(z_id):
-    posts = query_db("select * from posts where user=? order by created_at DESC LIMIT 5", [z_id])
+    posts = query_db("select * from posts where user=? order by created_at DESC", [z_id])
     return posts
 
 
@@ -216,31 +220,27 @@ def getCommentsAndRepliesOfPosts(posts):
         pcr.append(post)
     return pcr
 
-# gets the posts comments and replies of a users friends
-
-
-def getPCROfFriends(z_id):
+# gets friends posts
+def getFriendsPosts(z_id):
     query = """select * from posts where user in
     (select friend from friends where reference=?)
      order by created_at DESC"""
     friends_posts = query_db(query, [z_id])
-    return getCommentsAndRepliesOfPosts(friends_posts)
+    return friends_posts
 
 
 
 # gets alll posts of posts comments or replies where a user is mentioned
 def getPCROfMentions(z_id):
-    # query to find all posts where the post, a comment or a reply contain the users id
-    query = """select * from posts p1 where
-p1.id in (
-	select id from posts p2 where p2.message like ?
-)  or p1.id in (
-	select post from comments c1 where c1.message like ?
-)  or p1.id in (
-	select post from replies p1 where p1.message like ?
-)  order by created_at desc"""
-    mentioned_posts = query_db(query, ['%'+z_id+'%', '%'+z_id+'%','%'+z_id+'%'])
-    return getCommentsAndRepliesOfPosts(mentioned_posts)
+    # query to find all posts where the user is mentioned:
+    post_query = "select * from posts where message like ? order by created_at desc"
+    comment_query = "select * from comments where message like ? order by created_at desc"
+    reply_query = "select * from replies where message like ? order by created_at desc"
+    mentions = {}
+    mentions["posts"] = query_db(post_query, ['%'+z_id+'%'])
+    mentions["comments"] = query_db(comment_query, ['%'+z_id+'%'])
+    mentions["replies"] = query_db(reply_query, ['%'+z_id+'%'])
+    return mentions
 
 
 @app.route('/newpost', methods=['GET', 'POST'])
