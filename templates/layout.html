@@ -23,6 +23,12 @@
     <form class="form-inline my-2 my-lg-0" action="{{url_for("logout")}}" method="GET">
         <button class="btn btn-outline-danger my-2 my-sm-0" type="submit">Log out</button>
     </form>
+    <form class="form-inline my-2 my-lg-0" action="{{url_for("profile", z_id=session["current_user"])}}" method="GET">
+        <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">Profile</button>
+    </form>
+    <form class="form-inline my-2 my-lg-0" action="{{url_for("home")}}" method="GET">
+        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Home</button>
+    </form>
     {% else %}
     <form class="form-inline my-2 my-lg-0" action="{{url_for("login")}}" method="GET">
         <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Log in</button>

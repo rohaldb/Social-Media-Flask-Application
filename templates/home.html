@@ -1,36 +1,37 @@
 {% extends "layout.html" %}
 {% block body_contents %}
 <div class="row">
+    <form  action={{url_for('newpost')}} method="post">
+      <input type="text" name="message" value="">
+      <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Comment</button>
+    </form>
     {% for post in feed %}
     <div class="col-xs-12">
       <div class="card card-outline-primary mb-3 text-center">
         <div class="card-block">
-          <blockquote class="card-blockquote">
             <p>{{ post["message"]}}</p>
-            <small>posted by {{post["user"]}} at {{ post["created_at"]}}</small>
-          </blockquote>
-        </div>
-      </div>
+            <small>posted by <a href="{{url_for('profile', z_id=post['user'])}}">{{post["user"]}}</a> at {{ post["created_at"]}}</small>
           {% for comment in post["comments"]%}
                   <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
                     <div class="card-block">
                       <blockquote class="card-blockquote">
                         <p>{{ comment["message"] | safe }}</p>
-                        <small>posted by {{comment["user"]}} at {{ comment["created_at"]}}</small>
-                      </blockquote>
+                        <small>posted by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>                      </blockquote>
+                      {% for reply in comment["replies"]%}
+                            <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
+                              <div class="card-block">
+                                <blockquote class="card-blockquote">
+                                  <p>{{ reply["message"] | safe}}</p>
+                                  <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
+                                </blockquote>
+                              </div>
+                            </div>
+                      {% endfor %}
                     </div>
                   </div>
-                {% for reply in comment["replies"]%}
-                      <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
-                        <div class="card-block">
-                          <blockquote class="card-blockquote">
-                            <p>{{ reply["message"] | safe}}</p>
-                            <small>posted by {{reply["user"]}} at {{ reply["created_at"]}}</small>
-                          </blockquote>
-                        </div>
-                      </div>
-                {% endfor %}
           {% endfor %}
+        </div>
+      </div>
     {% endfor %}
   </div>
 </div>

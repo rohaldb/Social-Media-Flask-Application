@@ -3,12 +3,12 @@
 # written by andrewt@cse.unsw.edu.au October 2017
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
-# return redirect("/login", code=302)
 
 import os
 import re
 import pathlib
 import sqlite3
+import uuid
 from flask import Flask, render_template, session, g, request, redirect, make_response, url_for, flash
 from datetime import datetime
 from flask import Markup
@@ -36,6 +36,24 @@ def query_db(query, args=(), one=False):
                for idx, value in enumerate(row)) for row in cur.fetchall()]
     return (rv[0] if rv else None) if one else rv
 
+# http://flask.pocoo.org/snippets/37/
+# assumes date is the final value
+def insert(table, fields=(), values=()):
+    # g.db is the database connection
+    cur = g.db.cursor()
+    query = 'INSERT INTO %s (%s) VALUES (%s)' % (
+        table,
+        ', '.join(fields),
+        ', '.join(['?'] * (len(values)-1)) + ', DATETIME(?)',
+    )
+    # c.execute("INSERT INTO posts (id, user, created_at, message) VALUES (?, ?, DATETIME(?), ?)", (post_id, z_id, created_at[:-5], message))
+    print("find me ben")
+    print(query)
+    cur.execute(query, values)
+    g.db.commit()
+    id = cur.lastrowid
+    cur.close()
+    return id
 
 @app.after_request
 def after_request(response):
@@ -61,7 +79,7 @@ def login():
         user = query_db("select * from users where email=? and password=?",[username, password], one=True)
         if user:
             session["current_user"] = user["z_id"]
-            response = make_response(redirect(url_for("landing")))
+            response = make_response(redirect(url_for("home")))
             response.set_cookie('user', user["z_id"])
             return response
         else:
@@ -224,6 +242,28 @@ p1.id in (
     mentioned_posts = query_db(query, ['%'+z_id+'%', '%'+z_id+'%','%'+z_id+'%'])
     return getCommentsAndRepliesOfPosts(mentioned_posts)
 
+
+@app.route('/newpost', methods=['GET', 'POST'])
+def newpost():
+    message = request.form.get('message', '')
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    # check if the message is empty
+    elif not message:
+        flash("Cannot comment an empty message")
+        return redirect(url_for("home"))
+    # otherwise we are good to post
+    else:
+        insert("posts", ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])
+        return redirect(url_for("home"))
+
+
+# returns the current datetime in the database format
+def getCurrentDateTime():
+    d = datetime.now()
+    return datetime.strftime(d, '%Y-%m-%d %H:%M:%S')
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)

@@ -31,7 +31,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS posts(
 		message TEXT,
 		latitude REAL,
 		longitude REAL,
-		path TEXT NOT NULL)""")
+		path TEXT )""")
 c.execute("DROP TABLE IF EXISTS comments")
 c.execute("""CREATE TABLE IF NOT EXISTS comments(
 		id TEXT PRIMARY KEY,
@@ -39,7 +39,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS comments(
 		user TEXT REFERENCES Orders(ID),
 		created_at DATE,
 		message TEXT,
-		path TEXT NOT NULL)""")
+		path TEXT )""")
 c.execute("DROP TABLE IF EXISTS replies")
 c.execute("""CREATE TABLE IF NOT EXISTS replies(
 		id TEXT PRIMARY KEY,
@@ -48,7 +48,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS replies(
 		post REFERENCES posts(ID),
 		created_at DATE,
 		message TEXT,
-		path TEXT NOT NULL)""")
+		path TEXT )""")
 c.execute("DROP TABLE IF EXISTS friends")
 c.execute("""CREATE TABLE IF NOT EXISTS friends(
 		reference TEXT NOT NULL,
