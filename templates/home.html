@@ -13,11 +13,11 @@
       <div class="card card-outline-primary mb-3 text-center">
         <div class="card-block">
             {% if item["source"] == "mention" %}
-              <small>You were mentioned the following post by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}</small>
+              <small>You were mentioned the following post by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
             {% elif item["source"] == "friend" %}
-              <small>Your friend <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> posted the following at {{ item["created_at"]}}</small>
+              <small>Your friend <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> posted the following at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
             {% else %}
-              <small>You (<a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a>) posted the following at {{ item["created_at"]}}</small>
+              <small>You (<a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a>) posted the following at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
             {% endif %}
             <p>{{ item["message"]}}</p>
         </div>
@@ -25,14 +25,14 @@
     {% elif item["type"] == "comment" %}
       <div class="card card-outline-warning mb-3 text-center">
         <div class="card-block">
-            <small>You were mentioned the following comment by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}</small>
+            <small>You were mentioned the following comment by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small>
             <p>{{ item["message"]}}</p>
         </div>
       </div>
     {% else %}
       <div class="card card-outline-success mb-3 text-center">
         <div class="card-block">
-            <small>You were mentioned the following reply by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}</small>
+            <small>You were mentioned the following reply by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small>
             <p>{{ item["message"]}}</p>
         </div>
       </div>

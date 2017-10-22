@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block body_contents %}
+<div class="row">
+  <div class="col-xs-12">
+      <div class="card card-outline-primary mb-3 text-center">
+        <div class="card-block">
+            <p>{{ pcr["message"] | safe }}</p>
+            <small>posted by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
+        </div>
+      </div>
+      {% for comment in pcr["comments"]%}
+              <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
+                <div class="card-block">
+                  <blockquote class="card-blockquote">
+                    <p>{{ comment["message"] | safe }}</p>
+                    <small>posted by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>
+                  </blockquote>
+                </div>
+              </div>
+            {% for reply in comment["replies"]%}
+                  <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
+                    <div class="card-block">
+                      <blockquote class="card-blockquote">
+                        <p>{{ reply["message"] | safe}}</p>
+                        <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
+                      </blockquote>
+                    </div>
+                  </div>
+            {% endfor %}
+      {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

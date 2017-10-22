@@ -151,7 +151,7 @@ def getFriends(z_id):
 def getPCRofUser(z_id):
     posts = query_db(
         "select * from posts where user=? order by created_at DESC", [z_id])
-    return getCommentsAndRepliesOfPosts(posts)
+    return posts
 
 
 def sanitizePCR(object):
@@ -202,24 +202,20 @@ def getRecentPostsOfUser(z_id):
     return posts
 
 
-def getCommentsAndRepliesOfPosts(posts):
-    pcr = []
-    # itterate over posts
-    for post in posts:
-        sanitizePCR(post)
-        # get the comments for each post
-        post["comments"] = []
-        for comment in query_db("select * from comments where post=?", [post["id"]]):
-            sanitizePCR(comment)
-            # get the replies for each comment
-            comment["replies"] = []
-            for reply in query_db("select * from replies where comment=?", [comment["id"]]):
-                sanitizePCR(reply)
-                # append to parent objects
-                comment["replies"].append(reply)
-            post["comments"].append(comment)
-        pcr.append(post)
-    return pcr
+def getCommentsAndRepliesOfPost(post):
+    sanitizePCR(post)
+    # get the comments for each post
+    post["comments"] = []
+    for comment in query_db("select * from comments where post=?", [post["id"]]):
+        sanitizePCR(comment)
+        # get the replies for each comment
+        comment["replies"] = []
+        for reply in query_db("select * from replies where comment=?", [comment["id"]]):
+            sanitizePCR(reply)
+            # append to parent objects
+            comment["replies"].append(reply)
+        post["comments"].append(comment)
+    return post
 
 # gets friends posts
 def getFriendsPosts(z_id):
@@ -275,6 +271,21 @@ def newpost():
 def getCurrentDateTime():
     d = datetime.now()
     return datetime.strftime(d, '%Y-%m-%d %H:%M:%S')
+
+@app.route('/post/<id>', methods=['GET', 'POST'])
+def viewpost(id):
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    # query the post based on id
+    post = query_db("select * from posts where id=?",[id], one=True)
+    # get comments and replies
+    pcr = getCommentsAndRepliesOfPost(post)
+    # render
+    return render_template('post.html', pcr=pcr)
+
+
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)
