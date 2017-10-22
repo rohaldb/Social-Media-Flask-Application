@@ -206,11 +206,11 @@ def getCommentsAndRepliesOfPost(post):
     sanitizePCR(post)
     # get the comments for each post
     post["comments"] = []
-    for comment in query_db("select * from comments where post=?", [post["id"]]):
+    for comment in query_db("select * from comments where post=?  order by created_at DESC", [post["id"]]):
         sanitizePCR(comment)
         # get the replies for each comment
         comment["replies"] = []
-        for reply in query_db("select * from replies where comment=?", [comment["id"]]):
+        for reply in query_db("select * from replies where comment=?  order by created_at DESC", [comment["id"]]):
             sanitizePCR(reply)
             # append to parent objects
             comment["replies"].append(reply)
@@ -266,6 +266,42 @@ def newpost():
         insert("posts", ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])
         return redirect(url_for("home"))
 
+@app.route('/newcomment', methods=['GET', 'POST'])
+def newcomment():
+    message = request.form.get('message', '')
+    post_id = request.form.get('post_id', '')
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    # check if the message is empty
+    elif not message:
+        flash("Cannot comment an empty message")
+        return redirect(url_for("home"))
+    # otherwise we are good to post
+    else:
+        insert("comments", ["id", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime()])
+        return redirect(url_for("home"))
+
+@app.route('/newreply', methods=['GET', 'POST'])
+def newreply():
+    message = request.form.get('message', '')
+    post_id = request.form.get('post_id', '')
+    comment_id = request.form.get('post_id', '')
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    # check if the message is empty
+    elif not message:
+        flash("Cannot comment an empty message")
+        return redirect(url_for("home"))
+    # otherwise we are good to post
+    else:
+
+        insert("replies", ["id", "comment", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime()])
+        return redirect(url_for("home"))
+
 
 # returns the current datetime in the database format
 def getCurrentDateTime():
@@ -279,7 +315,7 @@ def viewpost(id):
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
     # query the post based on id
-    post = query_db("select * from posts where id=?",[id], one=True)
+    post = query_db("select * from posts where id=? order by created_at DESC",[id], one=True)
     # get comments and replies
     pcr = getCommentsAndRepliesOfPost(post)
     # render

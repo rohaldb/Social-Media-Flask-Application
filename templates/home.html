@@ -3,9 +3,8 @@
 <div class="row text-center">
   <form  action={{url_for('newpost')}} method="post" class="col-sm-12" >
     <div class="form-group">
-      <label for="postform">Whats on your mind?</label>
-      <input class="form-control" id="postform" type="text" name="message" value=""></input>
-      <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Comment</button>
+      <input class="form-control" type="text" name="message" value="" placeholder="Whats on your mind?"></input>
+      <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Post</button>
     </div>
   </form>
 </div>
@@ -25,6 +24,13 @@
               <small>You (<a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a>) posted the following at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
             {% endif %}
             <p>{{ item["message"]}}</p>
+            <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
+              <div class="form-group">
+                <input class="form-control" type="text" name="message" placeholder="Enter a Comment"></input>
+                <input type="hidden" value="{{item["id"]}}" name="post_id">
+                <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
+              </div>
+            </form>
         </div>
       </div>
     {% elif item["type"] == "comment" %}
@@ -32,6 +38,14 @@
         <div class="card-block">
             <small>You were mentioned the following comment by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small>
             <p>{{ item["message"]}}</p>
+            <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" >
+              <div class="form-group">
+                <input class="form-control" type="text" name="message" placeholder="Enter a Reply"></input>
+                <input type="hidden" value="{{item["id"]}}" name="post_id">
+                <input type="hidden" value="{{item["comment"]}}" name="comment_id">
+                <button class="btn btn-md btn-outline-success my-2 my-sm-0" type="submit">Reply</button>
+              </div>
+            </form>
         </div>
       </div>
     {% else %}
