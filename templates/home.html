@@ -4,59 +4,42 @@
   <input type="text" name="message" value="">
   <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Comment</button>
 </form>
+
+<h1>Feed</h1>
 <div class="row">
-    <h1>Friends Content</h1>
-    <div class="col-xs-12">
-    {% for post in friends_content %}
+  <div class="col-xs-12">
+  {% for item in feed%}
+    {% if item["type"] == "post" %}
       <div class="card card-outline-primary mb-3 text-center">
         <div class="card-block">
-            <p>{{ post["message"]}}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=post['user'])}}">{{post["user"]}}</a> at {{ post["created_at"]}}</small>
+            {% if item["source"] == "mention" %}
+              <small>You were mentioned the following post by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}</small>
+            {% elif item["source"] == "friend" %}
+              <small>Your friend <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> posted the following at {{ item["created_at"]}}</small>
+            {% else %}
+              <small>You (<a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a>) posted the following at {{ item["created_at"]}}</small>
+            {% endif %}
+            <p>{{ item["message"]}}</p>
         </div>
       </div>
-    {% endfor %}
-    </div>
-    <h1>My posts</h1>
-    <div class="col-xs-12">
-    {% for post in users_posts %}
-      <div class="card card-outline-primary mb-3 text-center">
-        <div class="card-block">
-            <p>{{ post["message"]}}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=post['user'])}}">{{post["user"]}}</a> at {{ post["created_at"]}}</small>
-        </div>
-      </div>
-    {% endfor %}
-    </div>
-    <h1>Mentions</h1>
-    <div class="col-xs-12">
-    {% for post in mentions["posts"] %}
-      <div class="card card-outline-primary mb-3 text-center">
-        <div class="card-block">
-            <p>{{ post["message"]}}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=post['user'])}}">{{post["user"]}}</a> at {{ post["created_at"]}}</small>
-        </div>
-      </div>
-    {% endfor %}
-    </div>
-    <div class="col-xs-12">
-    {% for post in mentions["comments"] %}
+    {% elif item["type"] == "comment" %}
       <div class="card card-outline-warning mb-3 text-center">
         <div class="card-block">
-            <p>{{ post["message"]}}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=post['user'])}}">{{post["user"]}}</a> at {{ post["created_at"]}}</small>
+            <small>You were mentioned the following comment by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}</small>
+            <p>{{ item["message"]}}</p>
         </div>
       </div>
-    {% endfor %}
-    <div class="col-xs-12">
-    {% for post in mentions["comments"] %}
+    {% else %}
       <div class="card card-outline-success mb-3 text-center">
         <div class="card-block">
-            <p>{{ post["message"]}}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=post['user'])}}">{{post["user"]}}</a> at {{ post["created_at"]}}</small>
+            <small>You were mentioned the following reply by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}</small>
+            <p>{{ item["message"]}}</p>
         </div>
       </div>
-    {% endfor %}
-    </div>
+    {% endif %}
+
+  {% endfor %}
+  </div>
 </div>
 
 {% endblock %}

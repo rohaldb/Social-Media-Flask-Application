@@ -46,9 +46,6 @@ def insert(table, fields=(), values=()):
         ', '.join(fields),
         ', '.join(['?'] * (len(values)-1)) + ', DATETIME(?)',
     )
-    # c.execute("INSERT INTO posts (id, user, created_at, message) VALUES (?, ?, DATETIME(?), ?)", (post_id, z_id, created_at[:-5], message))
-    print("find me ben")
-    print(query)
     cur.execute(query, values)
     g.db.commit()
     id = cur.lastrowid
@@ -188,13 +185,17 @@ def home():
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    friends_content = getFriendsPosts(session["current_user"])
-    mentions = getPCROfMentions(session["current_user"])
-    users_posts = getRecentPostsOfUser(session["current_user"])
-    # feed = friends_content + mentioned_posts + users_post
-    # remove duplicated based on post id
-    # feed = list({v['id']:v for v in feed}.values())
-    return render_template('home.html', friends_content=friends_content, mentions=mentions, users_posts=users_posts)
+    # get the feed content, and set source and identifier so we can print appropriately on feed
+    friends_content = setObjectSource(setObjectType(getFriendsPosts(session["current_user"]), "post"),"friend")
+    mentions = setObjectSource(getPCROfMentions(session["current_user"]), "mention")
+    users_posts = setObjectSource(setObjectType(getRecentPostsOfUser(session["current_user"]), "post"), "self")
+    # group the elements into a single list
+    feed = friends_content + users_posts + mentions
+    # sort them by date
+    feed = sorted(feed, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
+    # sanitize them
+    for i in feed: sanitizePCR(i)
+    return render_template('home.html', feed=feed)
 
 def getRecentPostsOfUser(z_id):
     posts = query_db("select * from posts where user=? order by created_at DESC", [z_id])
@@ -236,12 +237,22 @@ def getPCROfMentions(z_id):
     post_query = "select * from posts where message like ? order by created_at desc"
     comment_query = "select * from comments where message like ? order by created_at desc"
     reply_query = "select * from replies where message like ? order by created_at desc"
-    mentions = {}
-    mentions["posts"] = query_db(post_query, ['%'+z_id+'%'])
-    mentions["comments"] = query_db(comment_query, ['%'+z_id+'%'])
-    mentions["replies"] = query_db(reply_query, ['%'+z_id+'%'])
-    return mentions
+    posts = setObjectType(query_db(post_query, ['%'+z_id+'%']), "post")
+    comments = setObjectType(query_db(comment_query, ['%'+z_id+'%']), "comment")
+    replies = setObjectType(query_db(reply_query, ['%'+z_id+'%']), "replies")
+    return (posts + comments + replies)
 
+# sets an identifier in the object to either post, comment or reply
+def setObjectType(objects, type):
+    for object in objects:
+        object["type"] = type
+    return objects
+
+# sets source to either mention, friend or self to help with displaying on the ui
+def setObjectSource(objects, type):
+    for object in objects:
+        object["source"] = type
+    return objects
 
 @app.route('/newpost', methods=['GET', 'POST'])
 def newpost():
