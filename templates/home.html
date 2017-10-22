@@ -1,13 +1,18 @@
 {% extends "layout.html" %}
 {% block body_contents %}
-<form  action={{url_for('newpost')}} method="post">
-  <input type="text" name="message" value="">
-  <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Comment</button>
-</form>
+<div class="row text-center">
+  <form  action={{url_for('newpost')}} method="post" class="col-sm-12" >
+    <div class="form-group">
+      <label for="postform">Whats on your mind?</label>
+      <input class="form-control" id="postform" type="text" name="message" value=""></input>
+      <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Comment</button>
+    </div>
+  </form>
+</div>
 
 <h1>Feed</h1>
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-sm-12">
   {% for item in feed%}
     {% if item["type"] == "post" %}
       <div class="card card-outline-primary mb-3 text-center">
