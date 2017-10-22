@@ -13,38 +13,23 @@
   {% endfor %}
   <h3>Posts, comments, replies</h3>
   <div class="row">
-      {% for post in pcr %}
-      <div class="col-xs-12">
+      {% for pcr in pcrs %}
+      <div class="col-sm-12">
         <div class="card card-outline-primary mb-3 text-center">
           <div class="card-block">
-            <blockquote class="card-blockquote">
-              <p>{{ post["message"]}}</p>
-              <footer>{{ post["created_at"]}}</footer>
-            </blockquote>
+              <p>{{ pcr["message"] | safe }}</p>
+              <small>posted by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
+              <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
+                <div class="form-group">
+                  <input class="form-control" type="text" name="message" placeholder="Enter a Comment"></input>
+                  <input type="hidden" value="{{pcr["id"]}}" name="post_id">
+                  <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
+                </div>
+              </form>
           </div>
         </div>
-            {% for comment in post["comments"]%}
-                    <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
-                      <div class="card-block">
-                        <blockquote class="card-blockquote">
-                          <p>{{ comment["message"] | safe }}</p>
-                          <footer>{{ comment["created_at"]}}</footer>
-                        </blockquote>
-                      </div>
-                    </div>
-                  {% for reply in comment["replies"]%}
-                        <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
-                          <div class="card-block">
-                            <blockquote class="card-blockquote">
-                              <p>{{ reply["message"] | safe}}</p>
-                              <footer>{{ reply["created_at"]}}</footer>
-                            </blockquote>
-                          </div>
-                        </div>
-                  {% endfor %}
-            {% endfor %}
+      </div>
       {% endfor %}
-    </div>
   </div>
 
 {% endblock %}

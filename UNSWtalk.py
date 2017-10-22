@@ -117,14 +117,15 @@ def profile(z_id):
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-
     # get the users details
     user_details = getUserDetails(z_id)
     # get the posts, comments and replies.
-    pcr = getPCRofUser(z_id)
+    pcrs = getPCRofUser(z_id)
+    # sanitize them
+    for i in pcrs: sanitizePCR(i)
     # get the users friend details
     friends = getFriends(z_id)
-    return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcr=pcr, friends=friends)
+    return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcrs=pcrs, friends=friends)
 
 # gets a users personal details
 

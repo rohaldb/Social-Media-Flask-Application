@@ -6,24 +6,35 @@
         <div class="card-block">
             <p>{{ pcr["message"] | safe }}</p>
             <small>posted by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
+            <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
+              <div class="form-group">
+                <input class="form-control" type="text" name="message" placeholder="Enter a Comment"></input>
+                <input type="hidden" value="{{pcr["id"]}}" name="post_id">
+                <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
+              </div>
+            </form>
         </div>
       </div>
       {% for comment in pcr["comments"]%}
               <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
                 <div class="card-block">
-                  <blockquote class="card-blockquote">
-                    <p>{{ comment["message"] | safe }}</p>
-                    <small>posted by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>
-                  </blockquote>
+                  <p>{{ comment["message"] | safe }}</p>
+                  <small>posted by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>
+                  <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" >
+                    <div class="form-group">
+                      <input class="form-control" type="text" name="message" placeholder="Enter a Reply"></input>
+                      <input type="hidden" value="{{comment["id"]}}" name="post_id">
+                      <input type="hidden" value="{{comment["comment"]}}" name="comment_id">
+                      <button class="btn btn-md btn-outline-success my-2 my-sm-0" type="submit">Reply</button>
+                    </div>
+                  </form>
                 </div>
               </div>
             {% for reply in comment["replies"]%}
                   <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
                     <div class="card-block">
-                      <blockquote class="card-blockquote">
-                        <p>{{ reply["message"] | safe}}</p>
-                        <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
-                      </blockquote>
+                      <p>{{ reply["message"] | safe}}</p>
+                      <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
                     </div>
                   </div>
             {% endfor %}
