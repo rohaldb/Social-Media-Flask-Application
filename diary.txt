@@ -23,8 +23,14 @@ Activity: coding
 Comments: set up authentication
 ------------------------------------------------
 Date: 21/10
-Start: 1am
+Start: 1pm
 Stop: 6pm
 Activity: coding
 Comments: Feed information being pulled. Also had to add friends relational database
+------------------------------------------------
+Date: 22/10
+Start: 9am
+Stop: 3am
+Activity: coding
+Comments: Cleaned up the feed. Now posts are displayed on their own page. Serach for home feed has also changed. Posting posts comments replies and replies working too.
 ------------------------------------------------

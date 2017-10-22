@@ -18,7 +18,7 @@
         <div class="card card-outline-primary mb-3 text-center">
           <div class="card-block">
               <p>{{ pcr["message"] | safe }}</p>
-              <small>posted by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
+              <small>posted at {{ pcr["created_at"]}}. <a href="{{url_for('viewpost', id=pcr["id"])}}">View the full post.</a></small></small>
               <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
                 <div class="form-group">
                   <input class="form-control" type="text" name="message" placeholder="Enter a Comment"></input>

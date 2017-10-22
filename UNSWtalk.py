@@ -261,11 +261,11 @@ def newpost():
     # check if the message is empty
     elif not message:
         flash("Cannot comment an empty message")
-        return redirect(url_for("home"))
+        return redirect(redirect(request.referrer))
     # otherwise we are good to post
     else:
         insert("posts", ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])
-        return redirect(url_for("home"))
+        return redirect(request.referrer)
 
 @app.route('/newcomment', methods=['GET', 'POST'])
 def newcomment():
@@ -278,11 +278,11 @@ def newcomment():
     # check if the message is empty
     elif not message:
         flash("Cannot comment an empty message")
-        return redirect(url_for("home"))
+        return redirect(request.referrer)
     # otherwise we are good to post
     else:
         insert("comments", ["id", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime()])
-        return redirect(url_for("home"))
+        return redirect(request.referrer)
 
 @app.route('/newreply', methods=['GET', 'POST'])
 def newreply():
@@ -296,12 +296,11 @@ def newreply():
     # check if the message is empty
     elif not message:
         flash("Cannot comment an empty message")
-        return redirect(url_for("home"))
+        return redirect(request.referrer)
     # otherwise we are good to post
     else:
-
         insert("replies", ["id", "comment", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime()])
-        return redirect(url_for("home"))
+        return redirect(request.referrer)
 
 
 # returns the current datetime in the database format
