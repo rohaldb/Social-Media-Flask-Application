@@ -10,6 +10,13 @@
   {% for friend in friends %}
     <a href="{{url_for('profile', z_id=friend['z_id'])}}">{{friend["name"]}}</a>
     <a href="{{url_for('profile', z_id=friend['z_id'])}}"><img src="{{url_for('static', filename=friend['image_path'])}}" width="100px"></a>
+    <form  action={{url_for('removefriend')}} method="post" class="col-sm-3 form-inline" >
+      <div class="form-group">
+        <input type="hidden" value="{{friend["z_id"]}}" name="friend_id">
+        {{friend["z_id"]}}
+        <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Remove Friend</button>
+      </div>
+    </form>
   {% endfor %}
   <h3>Posts, comments, replies</h3>
   <div class="row">

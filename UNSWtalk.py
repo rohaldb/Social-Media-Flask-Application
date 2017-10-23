@@ -52,6 +52,21 @@ def insert(table, fields=(), values=()):
     cur.close()
     return id
 
+# deletes items based
+def delete(table, conditions=()):
+    # g.db is the database connection
+    cur = g.db.cursor()
+    query = 'DELETE FROM %s WHERE %s ' % (
+        table,
+        ' and '.join(conditions)
+    )
+    print(query)
+    cur.execute(query)
+    g.db.commit()
+    id = cur.lastrowid
+    cur.close()
+    return id
+
 @app.after_request
 def after_request(response):
     g.db.close()
@@ -131,6 +146,7 @@ def profile(z_id):
     for i in pcrs: sanitizePCR(i)
     # get the users friend details
     friends = getFriends(z_id)
+    print(len(friends))
     return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcrs=pcrs, friends=friends)
 
 # gets a users personal details
@@ -144,12 +160,18 @@ def getUserDetails(z_id):
 
 
 def getFriends(z_id):
-    user_details = getUserDetails(z_id)
+    # redirect back to login if not authenticated
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
     friends = []
-    friend_ids = re.split(r"\s*,\s*", user_details["friends"])
-    for friend_id in friend_ids:
+    # find the users friends from the friends table
+    results = query_db("select friend from friends where reference=?", [session["current_user"]])
+    print(results)
+    # find info on each friend
+    for result in results:
         friend_data = query_db(
-            "select * from users where z_id=?", [friend_id], one=True)
+            "select * from users where z_id=?", [result["friend"]], one=True)
         friends.append(friend_data)
     return friends
 
@@ -327,6 +349,19 @@ def viewpost(id):
     # render
     return render_template('post.html', pcr=pcr)
 
+@app.route('/removefriend', methods=['GET', 'POST'])
+def removefriend():
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    #get the friend id from the form
+    friend_id = request.form.get('friend_id', '')
+    # delete the friend from current users list and delete current user from friends list
+    delete("friends", ["reference = '%s'" % session["current_user"], "friend = '%s'" % friend_id])
+    delete("friends", ["friend = '%s'" % session["current_user"], "reference = '%s'" % friend_id])
+    # return to where we came from
+    return redirect(request.referrer)
 
 
 if __name__ == '__main__':
