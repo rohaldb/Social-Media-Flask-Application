@@ -34,3 +34,9 @@ Stop: 3am
 Activity: coding
 Comments: Cleaned up the feed. Now posts are displayed on their own page. Serach for home feed has also changed. Posting posts comments replies and replies working too.
 ------------------------------------------------
+Date: 22/10
+Start: 1:30pm
+Stop: 5:40pm
+Activity: coding
+Comments: Started subset 3. Create accounts, email verification, forgot password
+------------------------------------------------
