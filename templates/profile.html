@@ -1,5 +1,7 @@
 {% extends "layout.html" %} {% block body_contents %}
-  <img src="{{url_for('static', filename=image_path)}}">
+  {% if user_details["image_path"] %}
+    <img src="{{url_for('static', filename=user_details['image_path'])}}" width="250px;">
+  {% endif %}
   {% for key, value in user_details.items() %}
       {% if key in public_attrs and value %}
       <p><b>{{ key }}</b>:{{ value }}</p>

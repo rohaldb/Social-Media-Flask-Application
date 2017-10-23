@@ -6,7 +6,9 @@
   <div class="row">
     <div class="col-sm-12">
       <a href="{{url_for('profile', z_id=user['z_id'])}}">{{user["name"]}} ({{user["z_id"]}})</a>
-      <a href="{{url_for('profile', z_id=user['z_id'])}}"><img src="{{url_for('static', filename=user['image_path'])}}"></a>
+      {% if user['image_path'] %}
+        <a href="{{url_for('profile', z_id=user['z_id'])}}"><img src="{{url_for('static', filename=user['image_path'])}}" width="250px"></a>
+      {% endif %}
     </div>
   </div>
   {% endfor %}

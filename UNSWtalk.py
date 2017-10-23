@@ -99,7 +99,6 @@ def login():
         if user:
             session["current_user"] = user["z_id"]
             response = make_response(redirect(url_for("home")))
-            response.set_cookie('user', user["z_id"])
             return response
         else:
             flash("Unknown username or password")
@@ -113,15 +112,17 @@ def signup():
     if request.method == 'POST':
         username = request.form.get('email', '')
         password = request.form.get('password', '')
-        user = query_db("select * from users where email=? and password=?",[username, password], one=True)
-        if user:
-            session["current_user"] = user["z_id"]
-            response = make_response(redirect(url_for("home")))
-            response.set_cookie('user', user["z_id"])
+        z_id = request.form.get('z_id', '')
+        name = request.form.get('name', '')
+        existing_user = query_db("select * from users where z_id=?",[z_id], one=True)
+        if existing_user:
+            flash("A user with this zid has already made an account")
+            response = make_response(render_template('signup.html'))
             return response
         else:
-            flash("Unknown username or password")
-            response = make_response(render_template('login.html'))
+            insert("users", False, ["z_id", "email", "password", "name", "image_path","verified"], [z_id, username, password, name, 'images/defaultprofile.png', 0])
+            session["current_user"] = z_id
+            response = make_response(redirect(url_for("home")))
             return response
     else:
         return render_template('signup.html')
@@ -174,7 +175,7 @@ def profile(z_id):
     # check if the current user is friends with this user
     # check if they are already friends
     already_friends = query_db("select * from friends where reference=? and friend=?",[session["current_user"], z_id], one=True)
-    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcrs=pcrs, friends=friends, already_friends=already_friends)
+    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], pcrs=pcrs, friends=friends, already_friends=already_friends)
 
 # gets a users personal details
 
