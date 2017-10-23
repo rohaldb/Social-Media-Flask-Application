@@ -82,7 +82,6 @@ def after_request(response):
 
 @app.route('/', methods=['GET', 'POST'])
 def landing():
-    sendmail('rohaldb@gmail.com', 'test subject', 'whats up been!')
     if "current_user" in session:
         print("current user from start is ")
         print(session["current_user"])
@@ -98,9 +97,16 @@ def login():
         password = request.form.get('password', '')
         user = query_db("select * from users where email=? and password=?",[username, password], one=True)
         if user:
-            session["current_user"] = user["z_id"]
-            response = make_response(redirect(url_for("home")))
-            return response
+            # sign them in
+            if user["verified"]:
+                session["current_user"] = user["z_id"]
+                response = make_response(redirect(url_for("home")))
+                return response
+            # send them home and dont sign in if not verified
+            else:
+                flash("Please verify your email address before continuing")
+                response = make_response(redirect(url_for("landing")))
+                return response
         else:
             flash("Unknown username or password")
             response = make_response(render_template('login.html'))
@@ -111,7 +117,7 @@ def login():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form.get('email', '')
+        email = request.form.get('email', '')
         password = request.form.get('password', '')
         z_id = request.form.get('z_id', '')
         name = request.form.get('name', '')
@@ -121,13 +127,17 @@ def signup():
             response = make_response(render_template('signup.html'))
             return response
         else:
-            insert("users", False, ["z_id", "email", "password", "name", "image_path","verified"], [z_id, username, password, name, 'images/defaultprofile.png', 0])
-            session["current_user"] = z_id
-            response = make_response(redirect(url_for("home")))
+            insert("users", False, ["z_id", "email", "password", "name", "image_path","verified"], [z_id, email, password, name, 'images/defaultprofile.png', 0])
+            sendmail(email, "Verify Account", generateVerificationEmail(z_id))
+            flash("Please verify your email address before continuing")
+            response = make_response(redirect(url_for("landing")))
             return response
     else:
         return render_template('signup.html')
 
+
+def generateVerificationEmail(z_id):
+    return "Hey there. click this link for goodies. <a href='www.google.com'>ME!!</a>"
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -149,7 +159,7 @@ def search():
     # extract the thing we are searching for
     search_query = request.form.get('search_query', '')
     # find matched user
-    matched_users = query_db("select * from users where z_id like ?", ['%'+search_query+'%'])
+    matched_users = query_db("select * from users where z_id like ? and verified=1", ['%'+search_query+'%'])
     # find matching pcrs
     pcrs = getPCRThatMention(search_query)
     # sort them by date
@@ -402,6 +412,7 @@ def addfriend():
     return redirect(request.referrer)
 
 
+# https://stackoverflow.com/a/26191922/4803964
 def sendmail(to, subject, message):
     to = to
     gmail_user = 'z5019999ass2'
