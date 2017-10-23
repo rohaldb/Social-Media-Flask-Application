@@ -3,7 +3,7 @@
 # written by andrewt@cse.unsw.edu.au October 2017
 # as a starting point for COMP[29]041 assignment 2
 # https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
-
+import smtplib
 import os
 import re
 import pathlib
@@ -82,6 +82,7 @@ def after_request(response):
 
 @app.route('/', methods=['GET', 'POST'])
 def landing():
+    sendmail('rohaldb@gmail.com', 'test subject', 'whats up been!')
     if "current_user" in session:
         print("current user from start is ")
         print(session["current_user"])
@@ -399,6 +400,24 @@ def addfriend():
     insert("friends", False, ["reference", "friend"], [friend_id, session["current_user"]])
     # return to where we came from
     return redirect(request.referrer)
+
+
+def sendmail(to, subject, message):
+    to = to
+    gmail_user = 'z5019999ass2'
+    gmail_pwd = 'z5019999password'
+    smtpserver = smtplib.SMTP("smtp.gmail.com",587)
+    smtpserver.ehlo()
+    smtpserver.starttls()
+    smtpserver.ehlo()
+    smtpserver.login(gmail_user, gmail_pwd)
+    header = 'To:' + to + '\n' + 'From: ' + gmail_user + '\n' + 'Subject: ' + subject +  '\n'
+    msg = header + '\n' + message + '\n\n'
+    print(header)
+    print(msg)
+    smtpserver.sendmail(gmail_user, to, msg)
+    print('done!')
+    smtpserver.quit()
 
 
 if __name__ == '__main__':
