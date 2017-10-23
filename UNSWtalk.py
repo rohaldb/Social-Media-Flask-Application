@@ -37,15 +37,23 @@ def query_db(query, args=(), one=False):
     return (rv[0] if rv else None) if one else rv
 
 # http://flask.pocoo.org/snippets/37/
-# assumes date is the final value
-def insert(table, fields=(), values=()):
+def insert(table, date, fields=(), values=()):
     # g.db is the database connection
     cur = g.db.cursor()
-    query = 'INSERT INTO %s (%s) VALUES (%s)' % (
+    # if the field requires a date field
+    # assumes date is the final value
+    if date:
+        query = 'INSERT INTO %s (%s) VALUES (%s)' % (
+            table,
+            ', '.join(fields),
+            ', '.join(['?'] * (len(values)-1)) + ', DATETIME(?)',
+        )
+    else:
+        query = 'INSERT INTO %s (%s) VALUES (%s)' % (
         table,
         ', '.join(fields),
-        ', '.join(['?'] * (len(values)-1)) + ', DATETIME(?)',
-    )
+        ', '.join(['?'] * len(values))
+        )
     cur.execute(query, values)
     g.db.commit()
     id = cur.lastrowid
@@ -60,7 +68,6 @@ def delete(table, conditions=()):
         table,
         ' and '.join(conditions)
     )
-    print(query)
     cur.execute(query)
     g.db.commit()
     id = cur.lastrowid
@@ -146,8 +153,10 @@ def profile(z_id):
     for i in pcrs: sanitizePCR(i)
     # get the users friend details
     friends = getFriends(z_id)
-    print(len(friends))
-    return render_template('profile.html', user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcrs=pcrs, friends=friends)
+    # check if the current user is friends with this user
+    # check if they are already friends
+    already_friends = query_db("select * from friends where reference=? and friend=?",[session["current_user"], z_id], one=True)
+    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], image_path=user_details["image_path"], pcrs=pcrs, friends=friends, already_friends=already_friends)
 
 # gets a users personal details
 
@@ -166,8 +175,7 @@ def getFriends(z_id):
         return redirect(url_for("login"))
     friends = []
     # find the users friends from the friends table
-    results = query_db("select friend from friends where reference=?", [session["current_user"]])
-    print(results)
+    results = query_db("select friend from friends where reference=?", [z_id])
     # find info on each friend
     for result in results:
         friend_data = query_db(
@@ -292,7 +300,7 @@ def newpost():
         return redirect(redirect(request.referrer))
     # otherwise we are good to post
     else:
-        insert("posts", ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])
+        insert("posts", True, ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])
         return redirect(request.referrer)
 
 @app.route('/newcomment', methods=['GET', 'POST'])
@@ -309,7 +317,7 @@ def newcomment():
         return redirect(request.referrer)
     # otherwise we are good to post
     else:
-        insert("comments", ["id", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime()])
+        insert("comments", True, ["id", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime()])
         return redirect(request.referrer)
 
 @app.route('/newreply', methods=['GET', 'POST'])
@@ -327,7 +335,7 @@ def newreply():
         return redirect(request.referrer)
     # otherwise we are good to post
     else:
-        insert("replies", ["id", "comment", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime()])
+        insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime()])
         return redirect(request.referrer)
 
 
@@ -360,6 +368,20 @@ def removefriend():
     # delete the friend from current users list and delete current user from friends list
     delete("friends", ["reference = '%s'" % session["current_user"], "friend = '%s'" % friend_id])
     delete("friends", ["friend = '%s'" % session["current_user"], "reference = '%s'" % friend_id])
+    # return to where we came from
+    return redirect(request.referrer)
+
+@app.route('/addfriend', methods=['GET', 'POST'])
+def addfriend():
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    #get the friend id from the form
+    friend_id = request.form.get('friend_id', '')
+    # we only display the delete button if they arent friends, so at this point no need to check
+    insert("friends", False, ["reference", "friend"], [session["current_user"], friend_id])
+    insert("friends", False, ["reference", "friend"], [friend_id, session["current_user"]])
     # return to where we came from
     return redirect(request.referrer)
 

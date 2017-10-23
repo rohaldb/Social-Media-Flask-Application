@@ -5,18 +5,36 @@
       <p><b>{{ key }}</b>:{{ value }}</p>
       {% endif %}
   {% endfor %}
-
+  {% if profile_z_id != session["current_user"]%}
+    {% if not already_friends %}
+      <form  action={{url_for('addfriend')}} method="post" >
+        <div class="form-group">
+          <input type="hidden" value="{{profile_z_id}}" name="friend_id">
+          <button class="btn btn-md btn-outline-success" type="submit">Add to Friends</button>
+        </div>
+      </form>
+    {% else %}
+      <h4 style="color:green">You and {{user_details["name"]}} are already friends</h4>
+      <form  action={{url_for('removefriend')}} method="post">
+        <div class="form-group">
+          <input type="hidden" value="{{profile_z_id}}" name="friend_id">
+          <button class="btn btn-md btn-outline-danger" type="submit">Remove Friend</button>
+        </div>
+      </form>
+    {% endif %}
+  {% endif %}
   <h3>Friends</h3>
   {% for friend in friends %}
     <a href="{{url_for('profile', z_id=friend['z_id'])}}">{{friend["name"]}}</a>
     <a href="{{url_for('profile', z_id=friend['z_id'])}}"><img src="{{url_for('static', filename=friend['image_path'])}}" width="100px"></a>
-    <form  action={{url_for('removefriend')}} method="post" class="col-sm-3 form-inline" >
-      <div class="form-group">
-        <input type="hidden" value="{{friend["z_id"]}}" name="friend_id">
-        {{friend["z_id"]}}
-        <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Remove Friend</button>
-      </div>
-    </form>
+    {% if profile_z_id == session["current_user"]%}
+      <form  action={{url_for('removefriend')}} method="post">
+        <div class="form-group">
+          <input type="hidden" value="{{friend["z_id"]}}" name="friend_id">
+          <button class="btn btn-md btn-outline-danger" type="submit">Remove Friend</button>
+        </div>
+      </form>
+    {% endif %}
   {% endfor %}
   <h3>Posts, comments, replies</h3>
   <div class="row">
