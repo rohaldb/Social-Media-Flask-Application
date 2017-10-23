@@ -135,10 +135,6 @@ def signup():
     else:
         return render_template('signup.html')
 
-
-def generateVerificationEmail(z_id):
-    return "Hey there. click this link for goodies. <a href='www.google.com'>ME!!</a>"
-
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     if "current_user" in session:
@@ -411,6 +407,24 @@ def addfriend():
     # return to where we came from
     return redirect(request.referrer)
 
+@app.route('/verify/<z_id>', methods=['GET', 'POST'])
+def verify(z_id):
+    # set verified field to 1
+    cur = g.db.cursor()
+    cur.execute("update users set verified=1 where z_id=?", [z_id])
+    g.db.commit()
+    cur.close()
+    # log them in and go home
+    session["current_user"] = "z5019999"
+    flash("Account successfully verified")
+    return redirect(url_for("home"))
+
+def generateVerificationEmail(z_id):
+    return """
+Thanks for signing up %s!
+Click the link below to verify your account:
+http://127.0.0.1:5000%s
+    """ % (z_id, url_for('verify', z_id=z_id))
 
 # https://stackoverflow.com/a/26191922/4803964
 def sendmail(to, subject, message):
