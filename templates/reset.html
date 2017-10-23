@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block body_contents %}
+<div class = "container">
+	<div class="wrapper">
+		<form action="{{url_for('reset', z_id=z_id)}}" method="POST" name="Login_Form" class="form-signin">
+		    <h3 class="form-signin-heading">Password Reset</h3>
+			  <hr class="colorgraph"><br>
+			  <input type="password" class="form-control" name="password" placeholder="Enter your new password" required="true" autofocus="" />
+				<input type="hidden" value="{{z_id}}" name="z_id">
+			  <button class="btn btn-lg btn-primary btn-block"  name="Submit" value="Login" type="Submit">Update Password</button>
+		</form>
+	</div>
+</div>
+{% endblock %}

@@ -93,13 +93,13 @@ def landing():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('email', '')
+        z_id = request.form.get('z_id', '')
         password = request.form.get('password', '')
-        user = query_db("select * from users where email=? and password=?",[username, password], one=True)
+        user = query_db("select * from users where z_id=? and password=?",[z_id, password], one=True)
         if user:
             # sign them in
             if user["verified"]:
-                session["current_user"] = user["z_id"]
+                session["current_user"] = z_id
                 response = make_response(redirect(url_for("home")))
                 return response
             # send them home and dont sign in if not verified
@@ -128,12 +128,23 @@ def signup():
             return response
         else:
             insert("users", False, ["z_id", "email", "password", "name", "image_path","verified"], [z_id, email, password, name, 'images/defaultprofile.png', 0])
-            sendmail(email, "Verify Account", generateVerificationEmail(z_id))
+            sendmail(email, "Verify Account", verificationEmailText(z_id))
             flash("Please verify your email address before continuing")
             response = make_response(redirect(url_for("landing")))
             return response
     else:
         return render_template('signup.html')
+
+@app.route('/forgot', methods=['GET', 'POST'])
+def forgot():
+    if request.method == 'POST':
+        z_id = request.form.get('z_id', '')
+        user = query_db("select * from users where z_id=?", [z_id], one=True)
+        sendmail(user["email"], "Password Reset", passwordResetEmailText(z_id))
+        flash("Password Reset sent")
+        return make_response(redirect(url_for("landing")))
+    else:
+        return render_template('forgot.html')
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -415,16 +426,40 @@ def verify(z_id):
     g.db.commit()
     cur.close()
     # log them in and go home
-    session["current_user"] = "z5019999"
+    session["current_user"] = z_id
     flash("Account successfully verified")
     return redirect(url_for("home"))
 
-def generateVerificationEmail(z_id):
+@app.route('/reset/<z_id>', methods=['GET', 'POST'])
+def reset(z_id):
+    if request.method == 'POST':
+        #get the new password and z_id
+        password = request.form.get('password', '')
+        z_id = request.form.get('z_id', '')
+        cur = g.db.cursor()
+        cur.execute("update users set password=? where z_id=?", [password, z_id])
+        g.db.commit()
+        cur.close()
+        # log them in and go home
+        session["current_user"] = z_id
+        flash("Password successfully reset")
+        return redirect(url_for("home"))
+    else:
+        return render_template('reset.html', z_id=z_id)
+
+def verificationEmailText(z_id):
     return """
 Thanks for signing up %s!
 Click the link below to verify your account:
 http://127.0.0.1:5000%s
     """ % (z_id, url_for('verify', z_id=z_id))
+
+def passwordResetEmailText(z_id):
+    return """
+Hi %s,
+Click the link below to reset your email:
+http://127.0.0.1:5000%s
+    """ % (z_id, url_for('reset', z_id=z_id))
 
 # https://stackoverflow.com/a/26191922/4803964
 def sendmail(to, subject, message):

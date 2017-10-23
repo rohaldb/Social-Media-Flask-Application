@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block body_contents %}
+<div class = "container">
+	<div class="wrapper">
+		<form action="{{url_for('forgot')}}" method="POST" name="Login_Form" class="form-signin">
+		    <h3 class="form-signin-heading">Forgotten your password? No problem</h3>
+			  <hr class="colorgraph"><br>
+
+			  <input type="text" class="form-control" name="z_id" placeholder="Enter your ZID" required="true" autofocus="" />
+			  <button class="btn btn-lg btn-primary btn-block"  name="Submit" value="Login" type="Submit">Send reset email</button>
+		</form>
+		<a href="{{url_for('signup')}}">Not registered?</a>
+		<a href="{{url_for('login')}}">Think you remember?</a>
+	</div>
+</div>
+{% endblock %}
