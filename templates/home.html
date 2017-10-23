@@ -3,7 +3,7 @@
 <div class="row text-center">
   <form  action={{url_for('newpost')}} method="post" class="col-sm-12" >
     <div class="form-group">
-      <input class="form-control" type="text" name="message" value="" placeholder="Whats on your mind?"></input>
+      <input class="form-control" type="text" name="message" value="" placeholder="Whats on your mind?", required="true"></input>
       <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Post</button>
     </div>
   </form>

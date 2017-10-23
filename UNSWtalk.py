@@ -108,6 +108,24 @@ def login():
     else:
         return render_template('login.html')
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form.get('email', '')
+        password = request.form.get('password', '')
+        user = query_db("select * from users where email=? and password=?",[username, password], one=True)
+        if user:
+            session["current_user"] = user["z_id"]
+            response = make_response(redirect(url_for("home")))
+            response.set_cookie('user', user["z_id"])
+            return response
+        else:
+            flash("Unknown username or password")
+            response = make_response(render_template('login.html'))
+            return response
+    else:
+        return render_template('signup.html')
+
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -294,10 +312,6 @@ def newpost():
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # check if the message is empty
-    elif not message:
-        flash("Cannot comment an empty message")
-        return redirect(redirect(request.referrer))
     # otherwise we are good to post
     else:
         insert("posts", True, ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])

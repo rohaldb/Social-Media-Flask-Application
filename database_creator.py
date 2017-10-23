@@ -22,7 +22,9 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
 		longitude REAL,
 		image_path TEXT,
 		friends VARCHAR(100),
-		courses VARCHAR(100))""")
+		courses VARCHAR(100),
+		verified INTEGER
+		)""")
 c.execute("DROP TABLE IF EXISTS posts")
 c.execute("""CREATE TABLE IF NOT EXISTS posts(
 		id TEXT PRIMARY KEY,
