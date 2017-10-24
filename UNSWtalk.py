@@ -70,7 +70,19 @@ def delete(table, conditions=()):
     )
     cur.execute(query)
     g.db.commit()
-    id = cur.lastrowid
+    cur.close()
+    return id
+
+def update(table, fields, condition):
+    # g.db is the database connection
+    cur = g.db.cursor()
+    query = 'UPDATE %s SET %s where %s' % (
+        table,
+        ', '.join(fields),
+        condition
+    )
+    cur.execute(query)
+    g.db.commit()
     cur.close()
     return id
 
@@ -411,8 +423,6 @@ def addfriend():
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
     #get the friend id from the form
-    friend_id = request.form.get('friend_id', '')
-    # we only display the delete button if they arent friends, so at this point no need to check
     insert("friends", False, ["reference", "friend"], [session["current_user"], friend_id])
     insert("friends", False, ["reference", "friend"], [friend_id, session["current_user"]])
     # return to where we came from
@@ -421,10 +431,7 @@ def addfriend():
 @app.route('/verify/<z_id>', methods=['GET', 'POST'])
 def verify(z_id):
     # set verified field to 1
-    cur = g.db.cursor()
-    cur.execute("update users set verified=1 where z_id=?", [z_id])
-    g.db.commit()
-    cur.close()
+    update("users", ["verified=1"], "z_id='%s'" % z_id)
     # log them in and go home
     session["current_user"] = z_id
     flash("Account successfully verified")
@@ -436,10 +443,7 @@ def reset(z_id):
         #get the new password and z_id
         password = request.form.get('password', '')
         z_id = request.form.get('z_id', '')
-        cur = g.db.cursor()
-        cur.execute("update users set password=? where z_id=?", [password, z_id])
-        g.db.commit()
-        cur.close()
+        update("users", ["password='%s'"% password], "z_id='%s'" % z_id)
         # log them in and go home
         session["current_user"] = z_id
         flash("Password successfully reset")
@@ -496,12 +500,7 @@ def edit_profile(z_id):
         for field in fields:
             if request.form.get(field):
                 fields_to_update.append("%s='%s'" % (field, request.form.get(field)))
-        # join the fields in form field1=value1,  field2=value2 and perform the update
-        joined_fields = ', '.join(fields_to_update)
-        cur = g.db.cursor()
-        cur.execute("update users set %s where z_id=?" % joined_fields , [z_id])
-        g.db.commit()
-        cur.close()
+        update("users", fields_to_update, "z_id='%s'" % z_id)
         return redirect(request.referrer)
 
     else:

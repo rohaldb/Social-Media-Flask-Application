@@ -56,6 +56,7 @@ c.execute("DROP TABLE IF EXISTS friends")
 c.execute("""CREATE TABLE IF NOT EXISTS friends(
 		reference TEXT NOT NULL,
 		friend TEXT NOT NULL
+		accepted INTEGER,
 		)""")
 
 students_dir = "static/dataset-small"
@@ -92,7 +93,7 @@ for z_id in sorted(os.listdir(students_dir)):
 			friends = friends.group(1)
 			friend_ids = re.split(r"\s*,\s*", friends)
 			for friend_id in friend_ids:
-				c.execute("INSERT INTO friends (reference, friend) VALUES (?, ?)", (z_id, friend_id))
+				c.execute("INSERT INTO friends (reference, friend, accepted) VALUES (?, ?, ?)", (z_id, friend_id, 1))
 		if 'courses: ' in line:
 			courses = re.search(r'\((.*)\)', line)
 			courses = courses.group(1)
