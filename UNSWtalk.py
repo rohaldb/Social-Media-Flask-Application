@@ -176,13 +176,15 @@ def logout():
 
 
 @app.route('/search', methods=['GET', 'POST'])
-def search():
+@app.route('/search/<int:page>', methods=['GET', 'POST'])
+def search(page=1):
     # redirect back to login if not authenticated
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
     # extract the thing we are searching for
     search_query = request.form.get('search_query', '')
+    print(str(search_query))
     # find matched user
     matched_users = query_db("select * from users where z_id like ? or name like ? and verified=1", ['%'+search_query+'%', '%'+search_query+'%'])
     # find matching pcrs
@@ -191,7 +193,29 @@ def search():
     pcrs = sorted(pcrs, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
     # sanitize them
     for i in pcrs: sanitizePCR(i)
-    return render_template('search.html', matched_users=matched_users, pcrs=pcrs)
+    # calculate pagination indicies
+    users_start = (page-1)*ITEMS_PER_PAGE
+    users_end = page*ITEMS_PER_PAGE
+    pcrs_start = (page-1)*ITEMS_PER_PAGE
+    pcrs_end = page*ITEMS_PER_PAGE
+    # set next/ prev, possible to be changed on boundaries
+    prev_page = page-1
+    next_page = page+1
+    # check if we are out of bounds. If so, fix
+    if users_end >= len(matched_users):
+        users_end = len(matched_users)
+    if users_start < 0: users_start = 0
+    if pcrs_end >= len(pcrs):
+        pcrs_end = len(pcrs)
+    if pcrs_start < 0: pcrs_start = 0
+
+    #check if we have prev/next
+    if users_end >= len(matched_users) and pcrs_end >= len(pcrs):
+        next_page = None
+    if users_start <= 0 and pcrs_end <= 0:
+        prev_page = None
+
+    return render_template('search.html', matched_users=matched_users[users_start:users_end], pcrs=pcrs[pcrs_start:pcrs_end], prev_page=prev_page, next_page=next_page)
 
 
 @app.route('/profile/<z_id>', methods=['GET', 'POST'])
@@ -287,6 +311,7 @@ def home(page=1):
     feed = friends_content + users_posts + mentions
     # sort them by date
     feed = sorted(feed, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
+    feed=feed[:1]
     # sanitize them
     for i in feed: sanitizePCR(i)
     # calculate pagination indicies
@@ -296,8 +321,8 @@ def home(page=1):
     prev_page = page-1
     next_page = page+1
     # check if we are out of bounds
-    if start <= 1: start = 0; prev_page = None;
-    if end >= len(feed): end = len(feed)-1; next_page = None;
+    if page <= 1: start = 0; prev_page = None;
+    if end >= len(feed): end = len(feed); next_page = None;
     return render_template('home.html', feed=feed[start:end], prev_page=prev_page, next_page=next_page)
 
 def getRecentPostsOfUser(z_id):
