@@ -189,8 +189,10 @@ def search(page=1):
     matched_users = query_db("select * from users where z_id like ? or name like ? and verified=1", ['%'+search_query+'%', '%'+search_query+'%'])
     # find matching pcrs
     pcrs = getPCRThatMention(search_query)
+    print(len(matched_users))
     # sort them by date
     pcrs = sorted(pcrs, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
+    print(len(pcrs))
     # sanitize them
     for i in pcrs: sanitizePCR(i)
     # calculate pagination indicies
@@ -215,7 +217,7 @@ def search(page=1):
     if users_start <= 0 and pcrs_end <= 0:
         prev_page = None
 
-    return render_template('search.html', matched_users=matched_users[users_start:users_end], pcrs=pcrs[pcrs_start:pcrs_end], prev_page=prev_page, next_page=next_page)
+    return render_template('search.html', matched_users=matched_users[users_start:users_end], pcrs=pcrs[pcrs_start:pcrs_end], prev_page=prev_page, next_page=next_page, search_query=search_query)
 
 
 @app.route('/profile/<z_id>', methods=['GET', 'POST'])
@@ -311,7 +313,6 @@ def home(page=1):
     feed = friends_content + users_posts + mentions
     # sort them by date
     feed = sorted(feed, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
-    feed=feed[:1]
     # sanitize them
     for i in feed: sanitizePCR(i)
     # calculate pagination indicies

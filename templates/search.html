@@ -12,6 +12,7 @@
     </div>
   </div>
   {% endfor %}
+  <h1> Posts comments replies </h1>
   {% for item in pcrs%}
       {% if item["type"] == "post" %}
         <div class="card card-outline-primary mb-3 text-center">
@@ -40,10 +41,16 @@
   <nav class="text-center">
     <ul class="pagination">
       {% if prev_page %}
-      <li class="page-item"><a class="page-link" href="{{url_for('search', page=prev_page)}}">Previous Page</a></li>
+        <form class="" action="{{url_for('search', page=prev_page)}}" method="post">
+          <input type="hidden" name="search_query" value="{{search_query}}">
+          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Prev Page</button>
+        </form>
       {% endif %}
       {% if next_page %}
-      <li class="page-item"><a class="page-link" href="{{url_for('search', page=next_page)}}">Next Page</a></li>
+        <form class="" action="{{url_for('search', page=next_page)}}" method="post">
+          <input type="hidden" name="search_query" value="{{search_query}}">
+          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Next Page</button>
+        </form>
       {% endif %}
     </ul>
   </nav>
