@@ -70,7 +70,7 @@
               <small>posted at {{ pcr["created_at"]}}. <a href="{{url_for('viewpost', id=pcr["id"])}}">View the full post.</a></small></small>
               <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
                 <div class="form-group">
-                  <input class="form-control" type="text" name="message" placeholder="Enter a Comment"></input>
+                  <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
                   <input type="hidden" value="{{pcr["id"]}}" name="post_id">
                   <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
                 </div>

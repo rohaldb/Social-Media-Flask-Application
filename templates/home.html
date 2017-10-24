@@ -3,7 +3,7 @@
 <div class="row text-center">
   <form  action={{url_for('newpost')}} method="post" class="col-sm-12" >
     <div class="form-group">
-      <input class="form-control" type="text" name="message" value="" placeholder="Whats on your mind?", required="true"></input>
+      <input class="form-control" type="text" name="message" value="" placeholder="Whats on your mind?" required="true"></input>
       <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Post</button>
     </div>
   </form>
@@ -26,7 +26,7 @@
             <p>{{ item["message"]}}</p>
             <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
               <div class="form-group">
-                <input class="form-control" type="text" name="message" placeholder="Enter a Comment"></input>
+                <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
                 <input type="hidden" value="{{item["id"]}}" name="post_id">
                 <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
               </div>
@@ -40,7 +40,7 @@
             <p>{{ item["message"]}}</p>
             <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" >
               <div class="form-group">
-                <input class="form-control" type="text" name="message" placeholder="Enter a Reply"></input>
+                <input class="form-control" type="text" name="message" placeholder="Enter a Reply" required="true"></input>
                 <input type="hidden" value="{{item["id"]}}" name="post_id">
                 <input type="hidden" value="{{item["comment"]}}" name="comment_id">
                 <button class="btn btn-md btn-outline-success my-2 my-sm-0" type="submit">Reply</button>

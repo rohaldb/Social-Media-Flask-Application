@@ -396,10 +396,6 @@ def newcomment():
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # check if the message is empty
-    elif not message:
-        flash("Cannot comment an empty message")
-        return redirect(request.referrer)
     # otherwise we are good to post
     else:
         insert("comments", True, ["id", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime()])
@@ -414,10 +410,6 @@ def newreply():
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # check if the message is empty
-    elif not message:
-        flash("Cannot comment an empty message")
-        return redirect(request.referrer)
     # otherwise we are good to post
     else:
         insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime()])

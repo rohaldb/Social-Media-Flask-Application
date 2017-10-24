@@ -3,15 +3,14 @@ http://www.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk
 
 replace all localhost redirects with actual url
 
-reject friend request
+suggestions --> could do by friend
 
-suggestions
+
+reject friend request
 
 Uploading & Deleting Images
 
 Deleting pcrs
-
-Suspending/Deleting UNSWtalk Account (Level 3)
 
 delete / suspend account
 
