@@ -13,6 +13,7 @@ c.execute("DROP TABLE IF EXISTS users")
 c.execute("""CREATE TABLE IF NOT EXISTS users(
 		z_id TEXT PRIMARY KEY NOT NULL,
 		name TEXT,
+		bio TEXT,
 		program TEXT,
 		birthday TEXT,
 		suburb TEXT,

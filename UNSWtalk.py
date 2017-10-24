@@ -193,7 +193,7 @@ def profile(z_id):
     # check if the current user is friends with this user
     # check if they are already friends
     already_friends = query_db("select * from friends where reference=? and friend=?",[session["current_user"], z_id], one=True)
-    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends"], pcrs=pcrs, friends=friends, already_friends=already_friends)
+    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends", "bio"], pcrs=pcrs, friends=friends, already_friends=already_friends)
 
 # gets a users personal details
 
@@ -491,21 +491,13 @@ def edit_profile(z_id):
             flash("You cannot edit someone else's profile")
             return redirect(url_for("home"))
     if request.method == 'POST':
-# name,email,program,birthday,suburb,latitude,longitude
         # check which values are not empty and update them
-        name = request.form.get('name', '')
-        email = request.form.get('email', '')
-        program = request.form.get('program', '')
-        birthday = request.form.get('birthday', '')
-        suburb = request.form.get('suburb', '')
-        latitude = request.form.get('latitude', '')
-        longitude = request.form.get('longitude', '')
-        fields = ["name","email","program","birthday","suburb","latitude","longitude"]
+        fields = ["name","email","program","birthday","suburb","latitude","longitude", "bio"]
         fields_to_update = []
         for field in fields:
             if request.form.get(field):
                 fields_to_update.append("%s='%s'" % (field, request.form.get(field)))
-
+        # join the fields in form field1=value1,  field2=value2 and perform the update
         joined_fields = ', '.join(fields_to_update)
         print(joined_fields)
         cur = g.db.cursor()
