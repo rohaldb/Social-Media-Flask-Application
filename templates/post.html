@@ -13,6 +13,12 @@
                 <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
               </div>
             </form>
+            {% if pcr["user"] == session["current_user"]%}
+              <form class="col-sm-3 form-inline" action="{{url_for('delete_post')}}" method="post">
+                <input type="hidden" value="{{pcr["id"]}}" name="post_id">
+                <button class="btn btn-md btn-outline-danger my-2 my-sm-0" type="submit">Delete</button>
+              </form>
+            {% endif %}
         </div>
       </div>
       {% for comment in pcr["comments"]%}
@@ -28,6 +34,12 @@
                       <button class="btn btn-md btn-outline-success my-2 my-sm-0" type="submit">Reply</button>
                     </div>
                   </form>
+                  {% if comment["user"] == session["current_user"]%}
+                    <form class="col-sm-3 form-inline" action="{{url_for('delete_comment')}}" method="post">
+                      <input type="hidden" value="{{comment["id"]}}" name="comment_id">
+                      <button class="btn btn-md btn-outline-danger my-2 my-sm-0" type="submit">Delete</button>
+                    </form>
+                  {% endif %}
                 </div>
               </div>
             {% for reply in comment["replies"]%}
@@ -35,6 +47,12 @@
                     <div class="card-block">
                       <p>{{ reply["message"] | safe}}</p>
                       <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
+                      {% if reply["user"] == session["current_user"]%}
+                        <form class="col-sm-3 form-inline" action="{{url_for('delete_reply')}}" method="post">
+                          <input type="hidden" value="{{reply["id"]}}" name="reply_id">
+                          <button class="btn btn-md btn-outline-danger my-2 my-sm-0" type="submit">Delete</button>
+                        </form>
+                      {% endif %}
                     </div>
                   </div>
             {% endfor %}

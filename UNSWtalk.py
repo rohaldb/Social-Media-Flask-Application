@@ -388,6 +388,27 @@ def newpost():
         insert("posts", True, ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])
         return redirect(request.referrer)
 
+@app.route('/delete_post', methods=['GET', 'POST'])
+def delete_post():
+    post_id = request.form.get('post_id', '')
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    else:
+        deletePost(post_id)
+        return redirect(url_for("home"))
+
+# deletes a post with the id supplied
+def deletePost(post_id):
+    print("deleting %s" % post_id)
+    # find all dependent comments and delete them too
+    comments = query_db("select * from comments where post=?", [post_id])
+    for comment in comments:
+        deleteComments(comment["id"])
+    delete("posts", ["id = '%s'" % post_id])
+
+
 @app.route('/newcomment', methods=['GET', 'POST'])
 def newcomment():
     message = request.form.get('message', '')
@@ -396,10 +417,28 @@ def newcomment():
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # otherwise we are good to post
     else:
         insert("comments", True, ["id", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime()])
         return redirect(request.referrer)
+
+@app.route('/delete_comment', methods=['GET', 'POST'])
+def delete_comment():
+    comment_id = request.form.get('comment_id', '')
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    else:
+        deleteComments(comment_id)
+        return redirect(request.referrer)
+
+# deletes a comment with the id supplied
+def deleteComments(comment_id):
+    # find all dependent replies and delete them too
+    replies = query_db("select * from replies where comment=?", [comment_id])
+    for reply in replies:
+        deleteReply(reply["id"])
+    delete("comments", ["id = '%s'" % comment_id])
 
 @app.route('/newreply', methods=['GET', 'POST'])
 def newreply():
@@ -415,6 +454,21 @@ def newreply():
         insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime()])
         return redirect(request.referrer)
 
+@app.route('/delete_reply', methods=['GET', 'POST'])
+def delete_reply():
+    reply_id = request.form.get('reply_id', '')
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    # otherwise we are good to post
+    else:
+        deleteReply(reply_id)
+        return redirect(request.referrer)
+
+# deletes a reply with the id supplied
+def deleteReply(reply_id):
+    delete("replies", ["id = '%s'" % reply_id])
 
 # returns the current datetime in the database format
 def getCurrentDateTime():
