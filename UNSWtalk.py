@@ -184,15 +184,12 @@ def search(page=1):
         return redirect(url_for("login"))
     # extract the thing we are searching for
     search_query = request.form.get('search_query', '')
-    print(str(search_query))
     # find matched user
     matched_users = query_db("select * from users where z_id like ? or name like ? and verified=1", ['%'+search_query+'%', '%'+search_query+'%'])
     # find matching pcrs
     pcrs = getPCRThatMention(search_query)
-    print(len(matched_users))
     # sort them by date
     pcrs = sorted(pcrs, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
-    print(len(pcrs))
     # sanitize them
     for i in pcrs: sanitizePCR(i)
     # calculate pagination indicies

@@ -58,6 +58,13 @@ c.execute("""CREATE TABLE IF NOT EXISTS friends(
 		friend TEXT NOT NULL,
 		accepted INTEGER
 		)""")
+c.execute("DROP TABLE IF EXISTS courses")
+c.execute("""CREATE TABLE IF NOT EXISTS courses(
+		user TEXT NOT NULL,
+		year TEXT NOT NULL,
+		semester INTEGER NOT NULL,
+		code TEXT NOT NULL
+		)""")
 
 students_dir = "static/dataset-small"
 
@@ -97,6 +104,10 @@ for z_id in sorted(os.listdir(students_dir)):
 		if 'courses: ' in line:
 			courses = re.search(r'\((.*)\)', line)
 			courses = courses.group(1)
+			course_list = re.split(r",", courses)
+			for course in course_list:
+				course_info = course.split()
+				c.execute("INSERT INTO courses (user, year, semester, code) VALUES (?, ?, ?, ?)", (z_id, course_info[0], course_info[1][1], course_info[2]))
 	#store in database
 	c.execute("INSERT INTO users (z_id, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (z_id, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses, 1))
 
