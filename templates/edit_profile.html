@@ -13,7 +13,10 @@
 			<input type="number" step="0.001" class="form-control" name="latitude" placeholder="Latitude" value="{{user["latitude"] or ''}}"  />
 			<input type="number" step="0.001" class="form-control" name="longitude" placeholder="Longitude" value="{{user["longitude"] or ''}}"  />
 			<textarea class="form-control" name="bio" placeholder="Bio">{{user["bio"] or ''}}</textarea>
-			<input type="file" name="profile_pic" accept="image/*">
+			<span>Edit profile pic</span>
+			<input type="file" name="image_path" accept="image/*">
+			<span>Edit background pic</span>
+			<input type="file" name="background_path" accept="image/*">
 			<button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Update Details</button>
 		</form>
 		<a href="{{url_for('reset', z_id=session["current_user"])}}"><button class="btn btn-lg btn-primary btn-block">Reset Password</button></a>

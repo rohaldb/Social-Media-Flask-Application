@@ -22,6 +22,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
 		latitude REAL,
 		longitude REAL,
 		image_path TEXT,
+		background_path TEXT,
 		friends VARCHAR(100),
 		courses VARCHAR(100),
 		verified INTEGER

@@ -6,6 +6,9 @@
   {% if user_details["image_path"] %}
     <img src="{{url_for('static', filename=user_details['image_path'])}}" width="250px;">
   {% endif %}
+  {% if user_details["background_path"] %}
+    <img src="{{url_for('static', filename=user_details['background_path'])}}" width="250px;">
+  {% endif %}
   {% for key, value in user_details.items() %}
       {% if key in public_attrs and value %}
       <p><b>{{ key }}</b>:{{ value | safe }}</p>
