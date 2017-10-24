@@ -29,6 +29,7 @@
     <form class="form-inline my-2 my-lg-0" action="{{url_for("home")}}" method="GET">
         <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Home</button>
     </form>
+    <a href="{{url_for('recommendations')}}"><button class="btn btn-outline-primary">Recommendations</button></a>
     {% else %}
     <form class="form-inline my-2 my-lg-0" action="{{url_for("login")}}" method="GET">
         <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Log in</button>

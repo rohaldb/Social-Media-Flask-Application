@@ -66,7 +66,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS courses(
 		code TEXT NOT NULL
 		)""")
 
-students_dir = "static/dataset-small"
+students_dir = "static/dataset-medium"
 
 # itterate over each user folder and extract data
 for z_id in sorted(os.listdir(students_dir)):

@@ -582,6 +582,37 @@ def edit_profile(z_id):
         return render_template('edit_profile.html', z_id=z_id, user=user)
 
 
+@app.route('/recommendations', methods=['GET'])
+def recommendations():
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    else:
+        # run matching query:
+        # orders users by number of courses they take with current user (and checks they arent friends/frien request pending)
+        users = query_db("""
+                 SELECT c2.user FROM courses c1
+                INNER JOIN courses  c2 ON
+                c1.code = c2.code and
+                c1.year = c2.year and
+                c1.semester = c2.semester where
+                c1.user <> c2.user and
+                c1.user=? and not exists (
+                	select * from friends  where
+                	(reference= c1.user and friend=c2.user) or (friend= c1.user and reference=c2.user)
+                )
+                GROUP BY c2.user  ORDER BY count(c2.user) DESC
+                 """, [session["current_user"]])
+        # get the user info for each
+        recommendations = []
+        for user in users:
+            user_data = query_db(
+                "select * from users where z_id=?", [user["user"]], one=True)
+            recommendations.append(user_data)
+        return render_template("recommendations.html", recommendations=recommendations)
+
+
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)
     app.run(debug=True)

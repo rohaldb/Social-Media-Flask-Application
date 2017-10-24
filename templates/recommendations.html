@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block body_contents %}
+{% for user in recommendations %}
+  <a href="{{url_for('profile', z_id=user['z_id'])}}">{{user["name"]}}</a>
+  <a href="{{url_for('profile', z_id=user['z_id'])}}"><img src="{{url_for('static', filename=user['image_path'])}}" width="100px"></a>
+  <a href={{url_for('friend_request', friend_id=user["z_id"])}}>
+    <button class="btn btn-md btn-outline-success">Send Friend Request</button>
+  </a>
+  <br>
+{% endfor %}
+{% endblock %}

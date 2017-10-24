@@ -23,7 +23,7 @@
       </a>
     {% elif not friendship %}
       <a href={{url_for('friend_request', friend_id=user_details["z_id"])}}>
-        <button class="btn btn-md btn-outline-success">Add to Friends</button>
+        <button class="btn btn-md btn-outline-success">Send Friend Request</button>
       </a>
     {% elif friendship["accepted"]%}
       <h4 style="color:green">You and {{user_details["name"]}} are friends</h4>
