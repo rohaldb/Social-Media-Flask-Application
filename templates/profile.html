@@ -8,7 +8,7 @@
   {% endif %}
   {% for key, value in user_details.items() %}
       {% if key in public_attrs and value %}
-      <p><b>{{ key }}</b>:{{ value }}</p>
+      <p><b>{{ key }}</b>:{{ value | safe }}</p>
       {% endif %}
   {% endfor %}
   <!-- END USER DETAILS -->
