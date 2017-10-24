@@ -1,7 +1,7 @@
 {% extends "layout.html" %} {% block body_contents %}
 <div class="container">
 	<div class="wrapper">
-		<form action="{{url_for('edit_profile', z_id=z_id)}}" method="POST" name="Login_Form" class="form-signin">
+		<form action="{{url_for('edit_profile', z_id=z_id)}}" method="POST" name="Login_Form" class="form-signin"  enctype="multipart/form-data">
 			<h3 class="form-signin-heading">Edit your profile</h3>
 			<hr class="colorgraph"><br>
 
@@ -13,6 +13,7 @@
 			<input type="number" step="0.001" class="form-control" name="latitude" placeholder="Latitude" value="{{user["latitude"] or ''}}"  />
 			<input type="number" step="0.001" class="form-control" name="longitude" placeholder="Longitude" value="{{user["longitude"] or ''}}"  />
 			<textarea class="form-control" name="bio" placeholder="Bio">{{user["bio"] or ''}}</textarea>
+			<input type="file" name="profile_pic" accept="image/*">
 			<button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Update Details</button>
 		</form>
 		<a href="{{url_for('reset', z_id=session["current_user"])}}"><button class="btn btn-lg btn-primary btn-block">Reset Password</button></a>

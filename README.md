@@ -10,8 +10,6 @@ reject friend request
 
 Uploading & Deleting Images
 
-Deleting pcrs
-
 delete / suspend account
 
 Notifications

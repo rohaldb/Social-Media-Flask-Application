@@ -12,9 +12,10 @@ import uuid
 from flask import Flask, render_template, session, g, request, redirect, make_response, url_for, flash
 from datetime import datetime
 from flask import Markup
+from werkzeug.utils import secure_filename
 
-students_dir = "static/dataset-small"
 DATABASE = 'database.db'
+
 
 app = Flask(__name__)
 
@@ -612,6 +613,15 @@ def edit_profile(z_id):
         flash("You cannot edit someone else's profile")
         return redirect(url_for("home"))
     if request.method == 'POST':
+        # if there is a file, save it
+        if request.files['profile_pic']:
+            file = request.files['profile_pic']
+            filename = secure_filename(file.filename)
+            file.save(os.path.join("static/images", filename))
+            # save in the user model
+            update("users", ["image_path='%s'" % os.path.join("images", filename)], ["z_id='%s'" % z_id])
+
+
         # check which values are not empty and update them
         fields = ["name","email","program","birthday","suburb","latitude","longitude", "bio"]
         fields_to_update = []
@@ -657,6 +667,12 @@ def recommendations():
                 "select * from users where z_id=?", [user["user"]], one=True)
             recommendations.append(user_data)
         return render_template("recommendations.html", recommendations=recommendations)
+
+# http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
+# ensures safe filename
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 if __name__ == '__main__':
