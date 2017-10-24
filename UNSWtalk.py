@@ -19,6 +19,8 @@ DATABASE = 'database.db'
 
 app = Flask(__name__)
 
+# redirect url when returning from email
+redirect_url = "http://127.0.0.1:5000"
 
 def connect_db():
     return sqlite3.connect(DATABASE)
@@ -73,13 +75,13 @@ def delete(table, conditions=()):
     cur.close()
     return id
 
-def update(table, fields, condition):
+def update(table, fields, conditions):
     # g.db is the database connection
     cur = g.db.cursor()
     query = 'UPDATE %s SET %s where %s' % (
         table,
         ', '.join(fields),
-        condition
+        ' and '.join(conditions)
     )
     cur.execute(query)
     g.db.commit()
@@ -156,7 +158,7 @@ def forgot():
         flash("Password Reset sent")
         return make_response(redirect(url_for("landing")))
     else:
-        return render_template('forgot.html')
+        return possibleBackRoute()
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -202,10 +204,11 @@ def profile(z_id):
     for i in pcrs: sanitizePCR(i)
     # get the users friend details
     friends = getFriends(z_id)
-    # check if the current user is friends with this user
-    # check if they are already friends
-    already_friends = query_db("select * from friends where reference=? and friend=?",[session["current_user"], z_id], one=True)
-    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends", "bio"], pcrs=pcrs, friends=friends, already_friends=already_friends)
+    # get the friendship status between current_user and this user
+    friendship = query_db("select * from friends where reference=? and friend=?",[session["current_user"], z_id], one=True)
+    # check if the current user has a pending friend request that he can accept
+    pending_request = query_db("select * from friends where reference=? and friend=? and accepted=0",[z_id, session["current_user"]], one=True)
+    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends", "bio"], pcrs=pcrs, friends=friends, friendship=friendship, pending_request=pending_request)
 
 # gets a users personal details
 
@@ -224,7 +227,7 @@ def getFriends(z_id):
         return redirect(url_for("login"))
     friends = []
     # find the users friends from the friends table
-    results = query_db("select friend from friends where reference=?", [z_id])
+    results = query_db("select friend from friends where reference=? and accepted=1", [z_id])
     # find info on each friend
     for result in results:
         friend_data = query_db(
@@ -416,26 +419,47 @@ def removefriend():
     # return to where we came from
     return redirect(request.referrer)
 
-@app.route('/addfriend', methods=['GET', 'POST'])
-def addfriend():
+@app.route('/friend_request/<friend_id>', methods=['GET', 'POST'])
+def friend_request(friend_id):
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    #get the friend id from the form
-    insert("friends", False, ["reference", "friend"], [session["current_user"], friend_id])
-    insert("friends", False, ["reference", "friend"], [friend_id, session["current_user"]])
-    # return to where we came from
+    # find friends email
+    friends_email = query_db("select * from users where z_id=?", [friend_id], one=True)["email"]
+    # send email to friend
+    sendmail(friends_email, "Friend Request", friendRequestEmailText(session["current_user"], friend_id))
+    # add pending friend request
+    insert("friends", False, ["reference", "friend", "accepted"], [session["current_user"], friend_id, 0])
+    flash("Friend request sent")
     return redirect(request.referrer)
+
+@app.route('/addfriend/<reference>/<friend>', methods=['GET', 'POST'])
+def addfriend(reference,friend):
+    #update the pending friend request to be accepted
+    update("friends", ["accepted=1"], ["reference='%s'" % reference, "friend='%s'" % friend])
+    # create the bi directional friendship
+    insert("friends", False, ["reference", "friend", "accepted"], [friend, reference, 1])
+    # redirect to landingf
+    flash("friend request accepted")
+    return possibleBackRoute()
 
 @app.route('/verify/<z_id>', methods=['GET', 'POST'])
 def verify(z_id):
     # set verified field to 1
-    update("users", ["verified=1"], "z_id='%s'" % z_id)
+    update("users", ["verified=1"], ["z_id='%s'" % z_id])
     # log them in and go home
     session["current_user"] = z_id
     flash("Account successfully verified")
-    return redirect(url_for("home"))
+    return possibleBackRoute()
+
+# checks if it is possible to go back to a previous page, othweise returns route to landing
+def possibleBackRoute():
+    if request.referrer:
+        return redirect(request.referrer)
+    else:
+        return redirect(url_for('landing'))
+
 
 @app.route('/reset/<z_id>', methods=['GET', 'POST'])
 def reset(z_id):
@@ -443,7 +467,7 @@ def reset(z_id):
         #get the new password and z_id
         password = request.form.get('password', '')
         z_id = request.form.get('z_id', '')
-        update("users", ["password='%s'"% password], "z_id='%s'" % z_id)
+        update("users", ["password='%s'"% password], ["z_id='%s'" % z_id])
         # log them in and go home
         session["current_user"] = z_id
         flash("Password successfully reset")
@@ -455,15 +479,22 @@ def verificationEmailText(z_id):
     return """
 Thanks for signing up %s!
 Click the link below to verify your account:
-http://127.0.0.1:5000%s
-    """ % (z_id, url_for('verify', z_id=z_id))
+%s%s
+    """ % (redirect_url, z_id, url_for('verify', z_id=z_id))
 
 def passwordResetEmailText(z_id):
     return """
 Hi %s,
 Click the link below to reset your email:
-http://127.0.0.1:5000%s
-    """ % (z_id, url_for('reset', z_id=z_id))
+%s%s
+    """ % (redirect_url, z_id, url_for('reset', z_id=z_id))
+
+def friendRequestEmailText(reference, friend_z_id):
+    return """
+Hi %s,
+%s wants to add you as a friend. Click the link below to accept:
+%s%s
+    """ % (friend_z_id, reference, redirect_url, url_for('addfriend', reference=reference, friend=friend_z_id))
 
 # https://stackoverflow.com/a/26191922/4803964
 def sendmail(to, subject, message):
@@ -500,7 +531,7 @@ def edit_profile(z_id):
         for field in fields:
             if request.form.get(field):
                 fields_to_update.append("%s='%s'" % (field, request.form.get(field)))
-        update("users", fields_to_update, "z_id='%s'" % z_id)
+        update("users", fields_to_update, ["z_id='%s'" % z_id])
         return redirect(request.referrer)
 
     else:

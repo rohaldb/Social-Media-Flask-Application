@@ -55,8 +55,8 @@ c.execute("""CREATE TABLE IF NOT EXISTS replies(
 c.execute("DROP TABLE IF EXISTS friends")
 c.execute("""CREATE TABLE IF NOT EXISTS friends(
 		reference TEXT NOT NULL,
-		friend TEXT NOT NULL
-		accepted INTEGER,
+		friend TEXT NOT NULL,
+		accepted INTEGER
 		)""")
 
 students_dir = "static/dataset-small"
