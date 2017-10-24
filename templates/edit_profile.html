@@ -13,9 +13,9 @@
 			<input type="number" step="0.001" class="form-control" name="latitude" placeholder="Latitude" value="{{user["latitude"] or ''}}"  />
 			<input type="number" step="0.001" class="form-control" name="longitude" placeholder="Longitude" value="{{user["longitude"] or ''}}"  />
 			<textarea class="form-control" name="bio" placeholder="Bio">{{user["bio"] or ''}}</textarea>
-			<button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Update Detail</button>
+			<button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Update Details</button>
 		</form>
-		<a href="{{url_for('forgot')}}">Forgot password?</a>
+		<a href="{{url_for('reset', z_id=session["current_user"])}}"><button class="btn btn-lg btn-primary btn-block">Reset Password</button></a>
 	</div>
 </div>
 {% endblock %}

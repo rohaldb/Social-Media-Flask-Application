@@ -20,7 +20,8 @@ DATABASE = 'database.db'
 app = Flask(__name__)
 
 # redirect url when returning from email
-redirect_url = "http://127.0.0.1:5000"
+# redirect_url = "http://cgi.cse.unsw.edu.au"
+redirect_url = "http://127.0.0.1:5000/"
 
 def connect_db():
     return sqlite3.connect(DATABASE)
@@ -158,7 +159,7 @@ def forgot():
         flash("Password Reset sent")
         return make_response(redirect(url_for("landing")))
     else:
-        return possibleBackRoute()
+        return make_response(render_template('forgot.html'))
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -463,6 +464,10 @@ def possibleBackRoute():
 
 @app.route('/reset/<z_id>', methods=['GET', 'POST'])
 def reset(z_id):
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
     if request.method == 'POST':
         #get the new password and z_id
         password = request.form.get('password', '')
@@ -480,14 +485,14 @@ def verificationEmailText(z_id):
 Thanks for signing up %s!
 Click the link below to verify your account:
 %s%s
-    """ % (redirect_url, z_id, url_for('verify', z_id=z_id))
+    """ % (z_id, redirect_url, url_for('verify', z_id=z_id))
 
 def passwordResetEmailText(z_id):
     return """
 Hi %s,
 Click the link below to reset your email:
 %s%s
-    """ % (redirect_url, z_id, url_for('reset', z_id=z_id))
+    """ % (z_id, redirect_url, url_for('reset', z_id=z_id))
 
 def friendRequestEmailText(reference, friend_z_id):
     return """
@@ -532,6 +537,7 @@ def edit_profile(z_id):
             if request.form.get(field):
                 fields_to_update.append("%s='%s'" % (field, request.form.get(field)))
         update("users", fields_to_update, ["z_id='%s'" % z_id])
+        flash("Details successfully saved")
         return redirect(request.referrer)
 
     else:
