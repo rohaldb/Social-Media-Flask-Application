@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body_contents %}
+<div class = "container">
+	<div class="wrapper">
+		<form action="{{url_for('edit_profile', z_id=z_id)}}" method="POST" name="Login_Form" class="form-signin">
+		    <h3 class="form-signin-heading">Edit your profile</h3>
+			  <hr class="colorgraph"><br>
+
+			  <input type="text" class="form-control" name="name" placeholder="Name" value="{{user["name"] or ''}}" autofocus="" />
+				<input type="text" class="form-control" name="email" placeholder="Email" value="{{user["email"] or ''}}" autofocus="" />
+				<input type="text" class="form-control" name="program" placeholder="Program" value="{{user["program"] or ''}}" autofocus="" />
+				<input type="date" class="form-control" name="birthday" placeholder="Birthday" value="{{user["birthday"] or ''}}" autofocus="" />
+				<input type="text" class="form-control" name="suburb" placeholder="Suburb" value="{{user["suburb"] or ''}}" autofocus="" />
+				<input type="number" step="0.001" class="form-control" name="latitude" placeholder="Latitude" value="{{user["latitude"] or ''}}" autofocus="" />
+				<input type="number" step="0.001" class="form-control" name="longitude" placeholder="Longitude" value="{{user["longitude"] or ''}}" autofocus="" />
+				<!-- password -->
+			  <button class="btn btn-lg btn-primary btn-block"  name="Submit" value="Login" type="Submit">Update Detail</button>
+		</form>
+		<a href="{{url_for('forgot')}}">Forgot password?</a>
+	</div>
+</div>
+{% endblock %}

@@ -479,6 +479,46 @@ def sendmail(to, subject, message):
     print('done!')
     smtpserver.quit()
 
+@app.route('/edit_profile/<z_id>', methods=['GET', 'POST'])
+def edit_profile(z_id):
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+        # check if the user owns this page
+        # check user is logged in
+        if session["current_user"] != z_id:
+            flash("You cannot edit someone else's profile")
+            return redirect(url_for("home"))
+    if request.method == 'POST':
+# name,email,program,birthday,suburb,latitude,longitude
+        # check which values are not empty and update them
+        name = request.form.get('name', '')
+        email = request.form.get('email', '')
+        program = request.form.get('program', '')
+        birthday = request.form.get('birthday', '')
+        suburb = request.form.get('suburb', '')
+        latitude = request.form.get('latitude', '')
+        longitude = request.form.get('longitude', '')
+        fields = ["name","email","program","birthday","suburb","latitude","longitude"]
+        fields_to_update = []
+        for field in fields:
+            if request.form.get(field):
+                fields_to_update.append("%s='%s'" % (field, request.form.get(field)))
+
+        joined_fields = ', '.join(fields_to_update)
+        print(joined_fields)
+        cur = g.db.cursor()
+        cur.execute("update users set %s where z_id=?" % joined_fields , [z_id])
+        g.db.commit()
+        cur.close()
+        return redirect(request.referrer)
+
+    else:
+        # get the users info to prefill
+        user = query_db("select * from users where z_id=?", [z_id], one=True)
+        return render_template('edit_profile.html', z_id=z_id, user=user)
+
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)

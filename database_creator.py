@@ -96,7 +96,7 @@ for z_id in sorted(os.listdir(students_dir)):
 			courses = re.search(r'\((.*)\)', line)
 			courses = courses.group(1)
 	#store in database
-	c.execute("INSERT INTO users (z_id, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (z_id, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses, 0))
+	c.execute("INSERT INTO users (z_id, name, program, birthday, suburb, email, password, image_path, latitude, longitude, friends, courses, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (z_id, name, program, birthday, suburb, email, password, image_path, home_latitude, home_longitude, friends, courses, 1))
 
 	# start at 0 and count up looking for posts, comments and replies
 	post_counter = 0

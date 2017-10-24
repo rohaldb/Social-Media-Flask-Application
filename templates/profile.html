@@ -1,4 +1,7 @@
 {% extends "layout.html" %} {% block body_contents %}
+  {% if profile_z_id == session["current_user"]%}
+    <a href="{{url_for('edit_profile', z_id=session["current_user"])}}"><div class="btn btn-info">Edit Information</div></a>
+  {% endif %}
   {% if user_details["image_path"] %}
     <img src="{{url_for('static', filename=user_details['image_path'])}}" width="250px;">
   {% endif %}
@@ -9,7 +12,7 @@
   {% endfor %}
   {% if profile_z_id != session["current_user"]%}
     {% if not already_friends %}
-      <form  action={{url_for('addfriend')}} method="post" >
+      <form action={{url_for('addfriend')}} method="post" >
         <div class="form-group">
           <input type="hidden" value="{{profile_z_id}}" name="friend_id">
           <button class="btn btn-md btn-outline-success" type="submit">Add to Friends</button>
