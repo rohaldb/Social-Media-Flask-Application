@@ -181,7 +181,7 @@ def search():
     # extract the thing we are searching for
     search_query = request.form.get('search_query', '')
     # find matched user
-    matched_users = query_db("select * from users where z_id like ? and verified=1", ['%'+search_query+'%'])
+    matched_users = query_db("select * from users where z_id like ? or name like ? and verified=1", ['%'+search_query+'%', '%'+search_query+'%'])
     # find matching pcrs
     pcrs = getPCRThatMention(search_query)
     # sort them by date

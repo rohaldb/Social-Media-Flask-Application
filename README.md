@@ -4,8 +4,6 @@ http://www.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk
 replace all localhost redirects with actual url
 
 
-search by name
-
 Pagination of Posts & Search Results (Level 3)
 
 When searching for students or posts and when viewing posts the students be shown the first n (e.g n == 16) results. They should be able then view the next n and the next n and so on.
