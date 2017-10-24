@@ -485,11 +485,10 @@ def edit_profile(z_id):
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-        # check if the user owns this page
-        # check user is logged in
-        if session["current_user"] != z_id:
-            flash("You cannot edit someone else's profile")
-            return redirect(url_for("home"))
+    # check if the user owns this page
+    if session["current_user"] != z_id:
+        flash("You cannot edit someone else's profile")
+        return redirect(url_for("home"))
     if request.method == 'POST':
         # check which values are not empty and update them
         fields = ["name","email","program","birthday","suburb","latitude","longitude", "bio"]
@@ -499,7 +498,6 @@ def edit_profile(z_id):
                 fields_to_update.append("%s='%s'" % (field, request.form.get(field)))
         # join the fields in form field1=value1,  field2=value2 and perform the update
         joined_fields = ', '.join(fields_to_update)
-        print(joined_fields)
         cur = g.db.cursor()
         cur.execute("update users set %s where z_id=?" % joined_fields , [z_id])
         g.db.commit()
