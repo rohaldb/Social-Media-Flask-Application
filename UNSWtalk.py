@@ -16,12 +16,15 @@ from flask import Markup
 students_dir = "static/dataset-small"
 DATABASE = 'database.db'
 
-
 app = Flask(__name__)
 
 # redirect url when returning from email
 # redirect_url = "http://cgi.cse.unsw.edu.au"
 redirect_url = "http://127.0.0.1:5000/"
+
+# defines num items per page for pagination
+ITEMS_PER_PAGE = 16
+
 
 def connect_db():
     return sqlite3.connect(DATABASE)
@@ -270,7 +273,8 @@ def replaceTagsWithLinks(object):
 
 
 @app.route('/home', methods=['GET', 'POST'])
-def home():
+@app.route('/home/<int:page>', methods=['GET', 'POST'])
+def home(page=1):
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
@@ -285,7 +289,16 @@ def home():
     feed = sorted(feed, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
     # sanitize them
     for i in feed: sanitizePCR(i)
-    return render_template('home.html', feed=feed)
+    # calculate pagination indicies
+    start = (page-1)*ITEMS_PER_PAGE
+    end = page*ITEMS_PER_PAGE
+    # set next/ prev, possible to be changed on boundaries
+    prev_page = page-1
+    next_page = page+1
+    # check if we are out of bounds
+    if start <= 1: start = 0; prev_page = None;
+    if end >= len(feed): end = len(feed)-1; next_page = None;
+    return render_template('home.html', feed=feed[start:end], prev_page=prev_page, next_page=next_page)
 
 def getRecentPostsOfUser(z_id):
     posts = query_db("select * from posts where user=? order by created_at DESC", [z_id])
