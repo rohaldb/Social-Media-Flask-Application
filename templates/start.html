@@ -3,6 +3,9 @@
 {% block body_contents %}
 <div class="unswtalk_user_details">
 
-<h1>Welcome to BenBook. Search for a user or click below</h1>
-<a href="{{url_for('profile', z_id='z5195935')}}">Sample user z5195935</a>
+<h1>Welcome to UNSWTalk! Please login or register to continue:</h1>
+
+      <a class="btn btn-lg btn-primary my-2 my-sm-0" href="{{url_for("login")}}">Login</a>
+      <a class="btn btn-lg btn-info my-2 my-sm-0" href="{{url_for("signup")}}">Sign up</a>
+
 {% endblock %}
