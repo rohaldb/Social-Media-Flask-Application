@@ -40,3 +40,21 @@ Stop: 5:40pm
 Activity: coding
 Comments: Started subset 3. Create accounts, email verification, forgot password
 ------------------------------------------------
+Date: 23/10
+Start: 12:pm
+Stop: 5pm
+Activity: coding
+Comments: Finished all email related items. Change password, friend request  and verify account.
+------------------------------------------------
+Date: 24/10
+Start: 9am
+Stop: 12:pm
+Activity: coding
+Comments: Friend Suggestions working and uploading images to profile
+------------------------------------------------
+Date: 24/10
+Start: 10am
+Stop: 1pm
+Activity: coding
+Comments: Deleting profile images and styling of site.
+------------------------------------------------
