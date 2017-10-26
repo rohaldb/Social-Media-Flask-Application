@@ -608,6 +608,21 @@ def sendmail(to, subject, message):
     print('done!')
     smtpserver.quit()
 
+@app.route('/delete_user_image/<z_id>/<image>', methods=['GET', 'POST'])
+def delete_user_image(z_id, image):
+    # deletes either a users profile pic or background image, depending on the image param
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    if image == "background":
+        update("users", ["%s_path=''" % image], ["z_id='%s'" % z_id])
+        flash("Background picture deleted")
+    else:
+        update("users", ["%s_path='images/defaultprofile.png'" % image], ["z_id='%s'" % z_id])
+        flash("Profile picture deleted")
+    return redirect(request.referrer)
+
 @app.route('/edit_profile/<z_id>', methods=['GET', 'POST'])
 def edit_profile(z_id):
     # check user is logged in
