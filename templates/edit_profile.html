@@ -19,7 +19,7 @@
 			<input type="file" name="background_path" accept="image/*">
 			<button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Update Details</button>
 		</form>
-		<a href="{{url_for('reset', z_id=session["current_user"])}}"><button class="btn btn-lg btn-primary btn-block">Reset Password</button></a>
+		<a href="{{url_for('reset', z_id=session["current_user"])}}"><button class="btn btn-lg btn-warning btn-block">Reset Password</button></a>
 	</div>
 </div>
 {% endblock %}
