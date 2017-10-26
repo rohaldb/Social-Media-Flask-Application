@@ -5,7 +5,7 @@
   {% endif %}
     <div class="card" style="width: 20rem;">
       <div class="card-header">
-        {{user_details["name"]}}
+        <h3>{{user_details["name"]}}</h3>
       </div>
       <img class="card-img-top" src="{{url_for('static', filename=user_details['image_path'])}}" alt="Card image cap">
       <div class="card-header">
