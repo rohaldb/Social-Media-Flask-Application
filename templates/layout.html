@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>unswtalk</title>
-    <link href="{{url_for('static', filename='UNSWtalk.css')}}") rel="stylesheet">
+    <style type=text/css>{{ get_resource_as_string('static/UNSWtalk.css') }}</style>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
@@ -24,16 +24,16 @@
         </form>
     </div>
     {% if "current_user" in session %}
-    <form class="form-inline my-2 my-lg-0" action="{{url_for("logout")}}" method="GET">
-        <button class="btn btn-outline-danger my-2 my-sm-0" type="submit">Log out</button>
+    <form class="form-inline my-2 my-lg-0" action="{{url_for("home")}}" method="GET">
+        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Home</button>
     </form>
     <form class="form-inline my-2 my-lg-0" action="{{url_for("profile", z_id=session["current_user"])}}" method="GET">
         <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">Profile</button>
     </form>
-    <form class="form-inline my-2 my-lg-0" action="{{url_for("home")}}" method="GET">
-        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Home</button>
-    </form>
     <a href="{{url_for('recommendations')}}"><button class="btn btn-outline-secondary">Recommendations</button></a>
+    <form class="form-inline my-2 my-lg-0" action="{{url_for("logout")}}" method="GET">
+        <button class="btn btn-outline-danger my-2 my-sm-0" type="submit">Log out</button>
+    </form>
     {% else %}
     <form class="form-inline my-2 my-lg-0" action="{{url_for("login")}}" method="GET">
         <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Log in</button>

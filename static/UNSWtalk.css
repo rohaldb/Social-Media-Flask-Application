@@ -1,0 +1,25 @@
+.card-header a:link {
+    color: black;
+}
+.card-header a:link {
+    color: black;
+}
+
+/* visited link */
+.card-header a:visited {
+    color:black;
+}
+
+/* mouse over link */
+.card-header a:hover {
+    color:black;
+}
+
+/* selected link */
+.card-header a:active {
+    color:black;
+}
+
+.card-header a {
+    text-decoration: underline;
+}

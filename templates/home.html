@@ -1,60 +1,80 @@
 {% extends "layout.html" %}
 {% block body_contents %}
+<h1>Post</h1>
 <div class="row text-center">
   <form  action={{url_for('newpost')}} method="post" class="col-sm-12" >
     <div class="form-group">
-      <input class="form-control" type="text" name="message" value="" placeholder="Whats on your mind?" required="true"></input>
-      <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Post</button>
+      <textarea class="form-control" type="text" name="message" value="" placeholder="Whats on your mind?" required="true"></textarea>
+      <button class="btn btn-lg btn-info" type="submit">Post</button>
     </div>
   </form>
 </div>
 
 <h1>Feed</h1>
+
+<!-- pagination navigation -->
+<nav class="text-center">
+  <ul class="pagination">
+    {% if prev_page %}
+    <li class="page-item"  style="margin:0 auto;"><a class="page-link" href="{{url_for('home', page=prev_page)}}">Previous Page</a></li>
+    {% endif %}
+    {% if next_page %}
+    <li class="page-item"   style="margin:0 auto;"><a class="page-link" href="{{url_for('home', page=next_page)}}">Next Page</a></li>
+    {% endif %}
+  </ul>
+</nav>
+
 <div class="row">
   <div class="col-sm-12">
   {% for item in feed%}
     {% if item["type"] == "post" %}
-      <div class="card card-outline-primary mb-3 text-center">
-        <div class="card-block">
-            {% if item["source"] == "mention" %}
-              <small>You were mentioned in the following post by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
-            {% elif item["source"] == "friend" %}
-              <small>Your friend <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> posted the following at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
-            {% else %}
-              <small>You (<a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a>) posted the following at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
-            {% endif %}
-            <p>{{ item["message"]}}</p>
-            <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
-              <div class="form-group">
-                <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
-                <input type="hidden" value="{{item["id"]}}" name="post_id">
-                <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
-              </div>
-            </form>
+      <div class="card border-primary mb-3 text-center">
+        <div class="card-header bg-primary text-white">
+          {% if item["source"] == "mention" %}
+            <small>You were mentioned in the following post by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
+          {% elif item["source"] == "friend" %}
+            <small>Your friend <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> posted the following at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
+          {% else %}
+            <small>You (<a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a>) posted the following at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ item["message"]}}</p>
+        </div>
+        <div class="card-footer">
+          <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto">
+            <div class="form-group">
+              <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
+              <input type="hidden" value="{{item["id"]}}" name="post_id">
+              <button class="btn btn-md btn-warning my-2 my-sm-0" type="submit">Comment</button>
+            </div>
+          </form>
         </div>
       </div>
     {% elif item["type"] == "comment" %}
-      <div class="card card-outline-warning mb-3 text-center">
-        <div class="card-block">
-            <small>You were mentioned in the following comment by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small>
-            <p>{{ item["message"]}}</p>
-            <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" >
-              <div class="form-group">
-                <input class="form-control" type="text" name="message" placeholder="Enter a Reply" required="true"></input>
-                <input type="hidden" value="{{item["id"]}}" name="post_id">
-                <input type="hidden" value="{{item["comment"]}}" name="comment_id">
-                <button class="btn btn-md btn-outline-success my-2 my-sm-0" type="submit">Reply</button>
-              </div>
-            </form>
-        </div>
+    <div class="card border-warning mb-3 text-center">
+      <div class="card-header bg-warning text-white"><small>You were mentioned in the following comment by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></div>
+      <div class="card-body ">
+        <p class="card-text">{{ item["message"]}}</p>
       </div>
+      <div class="card-footer">
+        <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto;">
+          <div class="form-group">
+            <input class="form-control" type="text" name="message" placeholder="Enter a Reply" required="true"></input>
+            <input type="hidden" value="{{item["id"]}}" name="post_id">
+            <input type="hidden" value="{{item["comment"]}}" name="comment_id">
+            <button class="btn btn-md btn-success my-2 my-sm-0" type="submit">Reply</button>
+          </div>
+        </form>
+      </div>
+    </div>
     {% else %}
-      <div class="card card-outline-success mb-3 text-center">
-        <div class="card-block">
-            <small>You were mentioned in the following reply by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small>
-            <p>{{ item["message"]}}</p>
-        </div>
+    <div class="card border-success mb-3 text-center">
+        <div class="card-header bg-success text-white"><small>You were mentioned in the following reply by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></div>
+        <div class="card-body">
+        <p class="card-text">{{ item["message"]}}</p>
       </div>
+    </div>
     {% endif %}
 
   {% endfor %}
@@ -62,10 +82,10 @@
   <nav class="text-center">
     <ul class="pagination">
       {% if prev_page %}
-      <li class="page-item"><a class="page-link" href="{{url_for('home', page=prev_page)}}">Previous Page</a></li>
+      <li class="page-item"  style="margin:0 auto;"><a class="page-link" href="{{url_for('home', page=prev_page)}}">Previous Page</a></li>
       {% endif %}
       {% if next_page %}
-      <li class="page-item"><a class="page-link" href="{{url_for('home', page=next_page)}}">Next Page</a></li>
+      <li class="page-item"   style="margin:0 auto;"><a class="page-link" href="{{url_for('home', page=next_page)}}">Next Page</a></li>
       {% endif %}
     </ul>
   </nav>
