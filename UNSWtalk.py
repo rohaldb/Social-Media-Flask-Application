@@ -242,7 +242,7 @@ def profile(z_id):
     friendship = query_db("select * from friends where reference=? and friend=?",[session["current_user"], z_id], one=True)
     # check if the current user has a pending friend request that he can accept
     pending_request = query_db("select * from friends where reference=? and friend=? and accepted=0",[z_id, session["current_user"]], one=True)
-    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "friends", "bio"], pcrs=pcrs, friends=friends, friendship=friendship, pending_request=pending_request)
+    return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "bio"], pcrs=pcrs, friends=friends, friendship=friendship, pending_request=pending_request)
 
 # gets a users personal details
 

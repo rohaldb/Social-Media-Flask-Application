@@ -1,84 +1,112 @@
 {% extends "layout.html" %} {% block body_contents %}
   <!-- USER DETAILS -->
-  {% if profile_z_id == session["current_user"]%}
-    <a href="{{url_for('edit_profile', z_id=session["current_user"])}}"><div class="btn btn-info">Edit Information</div></a>
-  {% endif %}
-  {% if user_details["image_path"] %}
-    <img src="{{url_for('static', filename=user_details['image_path'])}}" width="250px;">
-  {% endif %}
   {% if user_details["background_path"] %}
-    <img src="{{url_for('static', filename=user_details['background_path'])}}" width="250px;">
+    <img src="{{url_for('static', filename=user_details['background_path'])}}" height="200px;" width="100%">
   {% endif %}
-  {% for key, value in user_details.items() %}
-      {% if key in public_attrs and value %}
-      <p><b>{{ key }}</b>:{{ value | safe }}</p>
-      {% endif %}
-  {% endfor %}
+    <div class="card" style="width: 20rem;">
+      <div class="card-header">
+        {{user_details["name"]}}
+      </div>
+      <img class="card-img-top" src="{{url_for('static', filename=user_details['image_path'])}}" alt="Card image cap">
+      <div class="card-header">
+          Details:
+      </div>
+        <ul class="list-group list-group-flush">
+          {% for key, value in user_details.items() %}
+              {% if key in public_attrs and value %}
+              <li class="list-group-item">
+                <b>{{ key }} </b>: {{ value | safe }}
+              </li>
+              {% endif %}
+          {% endfor %}
+          {% if profile_z_id == session["current_user"]%}
+            <li class="list-group-item">
+            <a href="{{url_for('edit_profile', z_id=session["current_user"])}}"><div class="btn btn-info">Edit Information</div></a>
+            </li>
+          {% endif %}
+          <!-- FRIENDSHIP STATUS  -->
+          {% if profile_z_id != session["current_user"]%}
+            {% if pending_request %}
+              <li class="list-group-item">
+              <p class="text-success">You have a pending request from {{user_details["name"]}} </p>
+              <a href="{{url_for('addfriend', reference=profile_z_id, friend=session["current_user"])}}">
+                <button class="btn btn-md btn-outline-success">Accept</button>
+              </a>
+              </li>
+            {% elif not friendship %}
+              <li class="list-group-item">
+              <a href={{url_for('friend_request', friend_id=user_details["z_id"])}}>
+                <button class="btn btn-md btn-outline-success">Send Friend Request</button>
+              </a>
+              </li>
+            {% elif friendship["accepted"]%}
+              <li class="list-group-item">
+              <p class="text-success">You and {{user_details["name"]}} are friends</p>
+              <form  action={{url_for('removefriend')}} method="post">
+                <div class="form-group">
+                  <input type="hidden" value="{{profile_z_id}}" name="friend_id">
+                  <button class="btn btn-md btn-outline-danger" type="submit">Remove Friend</button>
+                </div>
+              </form>
+              </li>
+            {% else %}
+              <li class="list-group-item">
+              <p class="text-warning">Friend request pending</p>
+              <form  action={{url_for('removefriend')}} method="post">
+                <div class="form-group">
+                  <input type="hidden" value="{{profile_z_id}}" name="friend_id">
+                  <button class="btn btn-md btn-outline-danger" type="submit">Cancel Request</button>
+                </div>
+              </form>
+              </li>
+            {% endif %}
+          {% endif %}
+        </ul>
+    </div>
   <!-- END USER DETAILS -->
-
-
-  <!-- FRIENDSHIP STATUS  -->
-  {% if profile_z_id != session["current_user"]%}
-    {% if pending_request %}
-      <h4 style="color:green">You have a pending request from {{user_details["name"]}} </h4>
-      <a href="{{url_for('addfriend', reference=profile_z_id, friend=session["current_user"])}}">
-        <button class="btn btn-md btn-outline-success">Accept</button>
-      </a>
-    {% elif not friendship %}
-      <a href={{url_for('friend_request', friend_id=user_details["z_id"])}}>
-        <button class="btn btn-md btn-outline-success">Send Friend Request</button>
-      </a>
-    {% elif friendship["accepted"]%}
-      <h4 style="color:green">You and {{user_details["name"]}} are friends</h4>
-      <form  action={{url_for('removefriend')}} method="post">
-        <div class="form-group">
-          <input type="hidden" value="{{profile_z_id}}" name="friend_id">
-          <button class="btn btn-md btn-outline-danger" type="submit">Remove Friend</button>
-        </div>
-      </form>
-    {% else %}
-      <h4 style="color:orange">Friend request pending</h4>
-      <form  action={{url_for('removefriend')}} method="post">
-        <div class="form-group">
-          <input type="hidden" value="{{profile_z_id}}" name="friend_id">
-          <button class="btn btn-md btn-outline-danger" type="submit">Cancel Request</button>
-        </div>
-      </form>
-    {% endif %}
-  {% endif %}
-  <h3>Friends</h3>
+  <h1>{{user_details["name"]}}'s Friends</h1>
   <!-- LIST FRIENDS -->
-  {% for friend in friends %}
-    <a href="{{url_for('profile', z_id=friend['z_id'])}}">{{friend["name"]}}</a>
-    <a href="{{url_for('profile', z_id=friend['z_id'])}}"><img src="{{url_for('static', filename=friend['image_path'])}}" width="100px"></a>
-    {% if profile_z_id == session["current_user"]%}
-      <form  action={{url_for('removefriend')}} method="post">
-        <div class="form-group">
-          <input type="hidden" value="{{friend["z_id"]}}" name="friend_id">
-          <button class="btn btn-md btn-outline-danger" type="submit">Remove Friend</button>
-        </div>
-      </form>
-    {% endif %}
-  {% endfor %}
+  <div class="row">
+    {% for friend in friends %}
+    <div class="col-xs-4">
+    <div class="card" style="width: 20rem;">
+      <a href="{{url_for('profile', z_id=friend['z_id'])}}"><img class="card-img-top" src="{{url_for('static', filename=friend['image_path'])}}" width="100px"></a>
+      <div class="card-body">
+        <p class="card-text"><a href="{{url_for('profile', z_id=friend['z_id'])}}">{{friend["name"]}}</a></p>
+        {% if profile_z_id == session["current_user"]%}
+          <form  action={{url_for('removefriend')}} method="post">
+            <div class="form-group">
+              <input type="hidden" value="{{friend["z_id"]}}" name="friend_id">
+              <button class="btn btn-md btn-outline-danger" type="submit">Remove Friend</button>
+            </div>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+    {% endfor %}
+  </div>
   <!-- END FRIENDS -->
 
   <!-- USERS CONTENT -->
-  <h3>Posts, comments, replies</h3>
+  <h1>{{user_details["name"]}}'s Posts</h1>
   <div class="row">
       {% for pcr in pcrs %}
-      <div class="col-sm-12">
-        <div class="card card-outline-primary mb-3 text-center">
-          <div class="card-block">
-              <p>{{ pcr["message"] | safe }}</p>
-              <small>posted at {{ pcr["created_at"]}}. <a href="{{url_for('viewpost', id=pcr["id"])}}">View the full post.</a></small></small>
-              <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
-                <div class="form-group">
-                  <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
-                  <input type="hidden" value="{{pcr["id"]}}" name="post_id">
-                  <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
-                </div>
-              </form>
-          </div>
+      <div class="card border-primary mb-3 text-center" style="width:100%;">
+        <div class="card-header bg-primary text-white">
+          <small>posted at {{ pcr["created_at"]}}. <a href="{{url_for('viewpost', id=pcr["id"])}}">View the full post.</a></small>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ pcr["message"] | safe }}</p>
+        </div>
+        <div class="card-footer">
+          <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto">
+            <div class="form-group">
+              <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
+              <input type="hidden" value="{{pcr["id"]}}" name="post_id">
+              <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
+            </div>
+          </form>
         </div>
       </div>
       {% endfor %}
