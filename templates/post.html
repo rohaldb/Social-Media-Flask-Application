@@ -4,7 +4,7 @@
   <div class="col-sm-12">
     <div class="card border-primary mb-3 text-center">
       <div class="card-header bg-primary text-white">
-        <small>posted by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
+        <small>post created by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
         {% if pcr["user"] == session["current_user"]%}
           <form style="display:inline;" class="col-sm-3 form-inline" action="{{url_for('delete_post')}}" method="post">
             <input type="hidden" value="{{pcr["id"]}}" name="post_id">
@@ -31,7 +31,7 @@
 
           <div class="card border-warning mb-3 text-center">
             <div class="card-header bg-warning text-white">
-              <small>posted by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>
+              <small>comment created by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>
               {% if comment["user"] == session["current_user"]%}
                 <form style="display:inline;" class="col-sm-3 form-inline" action="{{url_for('delete_comment')}}" method="post">
                   <input type="hidden" value="{{comment["id"]}}" name="comment_id">
@@ -58,7 +58,7 @@
             <div class="col-sm-10 offset-sm-2">
               <div class="card border-success mb-3 text-center">
                   <div class="card-header bg-success text-white">
-                    <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
+                    <small>reply created by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
                     {% if reply["user"] == session["current_user"]%}
                       <form style="display:inline;"class="col-sm-3 form-inline" action="{{url_for('delete_reply')}}" method="post">
                         <input type="hidden" value="{{reply["id"]}}" name="reply_id">
