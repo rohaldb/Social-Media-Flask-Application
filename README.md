@@ -3,7 +3,6 @@ http://www.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk
 
 replace all localhost redirects with actual url
 
-1. delete profile/background
 2. include image and video in pcr
 
 reject friend request
