@@ -2,62 +2,77 @@
 {% block body_contents %}
 <div class="row">
   <div class="col-sm-12">
-      <div class="card card-outline-primary mb-3 text-center">
-        <div class="card-block">
-            <p>{{ pcr["message"] | safe }}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
-            <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
-              <div class="form-group">
-                <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
-                <input type="hidden" value="{{pcr["id"]}}" name="post_id">
-                <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
-              </div>
-            </form>
-            {% if pcr["user"] == session["current_user"]%}
-              <form class="col-sm-3 form-inline" action="{{url_for('delete_post')}}" method="post">
-                <input type="hidden" value="{{pcr["id"]}}" name="post_id">
-                <button class="btn btn-md btn-outline-danger my-2 my-sm-0" type="submit">Delete</button>
-              </form>
-            {% endif %}
-        </div>
+    <div class="card border-primary mb-3 text-center">
+      <div class="card-header bg-primary text-white">
+        <small>posted by <a href="{{url_for('profile', z_id=pcr['user'])}}">{{pcr["user"]}}</a> at {{ pcr["created_at"]}}</small>
+        {% if pcr["user"] == session["current_user"]%}
+          <form style="display:inline;" class="col-sm-3 form-inline" action="{{url_for('delete_post')}}" method="post">
+            <input type="hidden" value="{{pcr["id"]}}" name="post_id">
+            <button class="btn btn-md btn-danger my-2 my-sm-0" type="submit">Delete</button>
+          </form>
+        {% endif %}
       </div>
+      <div class="card-body">
+        <p class="card-text">{{ pcr["message"] | safe }}</p>
+      </div>
+      <div class="card-footer">
+        <form  style="margin:0 auto;" action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" >
+          <div class="form-group">
+            <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
+            <input type="hidden" value="{{pcr["id"]}}" name="post_id">
+            <button class="btn btn-md btn-outline-warning my-2 my-sm-0" type="submit">Comment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
       {% for comment in pcr["comments"]%}
-              <div class="card card-outline-success mb-3 text-center" style="margin-left: 75px;">
-                <div class="card-block">
-                  <p>{{ comment["message"] | safe }}</p>
-                  <small>posted by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>
-                  <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" >
-                    <div class="form-group">
-                      <input class="form-control" type="text" name="message" placeholder="Enter a Reply" required="true"></input>
-                      <input type="hidden" value="{{comment["id"]}}" name="post_id">
-                      <input type="hidden" value="{{comment["comment"]}}" name="comment_id">
-                      <button class="btn btn-md btn-outline-success my-2 my-sm-0" type="submit">Reply</button>
-                    </div>
-                  </form>
-                  {% if comment["user"] == session["current_user"]%}
-                    <form class="col-sm-3 form-inline" action="{{url_for('delete_comment')}}" method="post">
-                      <input type="hidden" value="{{comment["id"]}}" name="comment_id">
-                      <button class="btn btn-md btn-outline-danger my-2 my-sm-0" type="submit">Delete</button>
-                    </form>
-                  {% endif %}
+      <div class="col-sm-11 offset-sm-1">
+
+          <div class="card border-warning mb-3 text-center">
+            <div class="card-header bg-warning text-white">
+              <small>posted by <a href="{{url_for('profile', z_id=comment['user'])}}">{{comment["user"]}}</a> at {{ comment["created_at"]}}</small>
+              {% if comment["user"] == session["current_user"]%}
+                <form style="display:inline;" class="col-sm-3 form-inline" action="{{url_for('delete_comment')}}" method="post">
+                  <input type="hidden" value="{{comment["id"]}}" name="comment_id">
+                  <button class="btn btn-md btn-danger my-2 my-sm-0" type="submit">Delete</button>
+                </form>
+              {% endif %}
+            </div>
+            <div class="card-body ">
+              <p class="card-text">{{ comment["message"] | safe }}</p>
+            </div>
+            <div class="card-footer">
+              <form  style="margin:0 auto;" action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" >
+                <div class="form-group">
+                  <input class="form-control" type="text" name="message" placeholder="Enter a Reply" required="true"></input>
+                  <input type="hidden" value="{{comment["id"]}}" name="post_id">
+                  <input type="hidden" value="{{comment["comment"]}}" name="comment_id">
+                  <button class="btn btn-md btn-outline-success my-2 my-sm-0" type="submit">Reply</button>
                 </div>
-              </div>
+              </form>
+            </div>
+          </div>
+        </div>
             {% for reply in comment["replies"]%}
-                  <div class="card card-outline-warning mb-3 text-center"  style="margin-left: 150px">
-                    <div class="card-block">
-                      <p>{{ reply["message"] | safe}}</p>
-                      <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
-                      {% if reply["user"] == session["current_user"]%}
-                        <form class="col-sm-3 form-inline" action="{{url_for('delete_reply')}}" method="post">
-                          <input type="hidden" value="{{reply["id"]}}" name="reply_id">
-                          <button class="btn btn-md btn-outline-danger my-2 my-sm-0" type="submit">Delete</button>
-                        </form>
-                      {% endif %}
-                    </div>
+            <div class="col-sm-10 offset-sm-2">
+              <div class="card border-success mb-3 text-center">
+                  <div class="card-header bg-success text-white">
+                    <small>posted by <a href="{{url_for('profile', z_id=reply['user'])}}">{{reply["user"]}}</a> at {{ reply["created_at"]}}</small>
+                    {% if reply["user"] == session["current_user"]%}
+                      <form style="display:inline;"class="col-sm-3 form-inline" action="{{url_for('delete_reply')}}" method="post">
+                        <input type="hidden" value="{{reply["id"]}}" name="reply_id">
+                        <button class="btn btn-md btn-danger my-2 my-sm-0" type="submit">Delete</button>
+                      </form>
+                    {% endif %}
                   </div>
+                  <div class="card-body">
+                    <p class="card-text">{{ reply["message"] | safe}}</p>
+                  </div>
+              </div>
+            </div>
             {% endfor %}
       {% endfor %}
-  </div>
 </div>
 
 {% endblock %}
