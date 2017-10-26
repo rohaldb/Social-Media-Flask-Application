@@ -12,3 +12,4 @@ delete / suspend account
 Notifications
 
 A student should be able to make part or all of the content of their UNSWtalk page visible only to their friends.
+''

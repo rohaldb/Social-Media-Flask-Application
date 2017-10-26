@@ -40,7 +40,15 @@
               {% endif %}
             </div>
             <div class="card-body ">
-              <p class="card-text">{{ comment["message"] | safe }}</p>
+              {%if comment["type"] == "text"%}
+                <p class="card-text">{{ comment["message"]}}</p>
+              {%elif comment["type"] == "image"%}
+                <img src="{{url_for('static', filename=comment['content_path'])}}">
+              {%elif comment["type"] == "video"%}
+                <video width="320" height="240" controls>
+                  <source src="{{url_for('static', filename=comment['content_path'])}}" type="video/mp4">
+                </video>
+              {%endif%}
             </div>
             <div class="card-footer">
               <form  style="margin:0 auto;" action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" >

@@ -392,7 +392,7 @@ def newpost():
         return redirect(url_for("login"))
     # otherwise we are good to post
     else:
-        insert("posts", True, ["id", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime()])
+        insert("posts", True, ["id", "user", "message", "created_at", "type"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime(), "text"])
         return redirect(request.referrer)
 
 @app.route('/delete_post', methods=['GET', 'POST'])
@@ -425,8 +425,23 @@ def newcomment():
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
     else:
-        insert("comments", True, ["id", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime()])
+        # are we commenting media or a text
+        if "media" in request.files:
+            file = request.files["media"]
+            filename = secure_filename(file.filename)
+            file.save(os.path.join("static/images", filename))
+            file_type = determineMediaType(filename)
+            insert("comments", True, ["id", "post", "user", "message", "type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
+        else:
+            insert("comments", True, ["id", "post", "user", "message", "created_at", "type"], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime(), "text"])
         return redirect(request.referrer)
+
+def determineMediaType(filename):
+    extension = filename.rsplit('.', 1)[1]
+    # print("extension is %s", extension)
+    if extension in ["jpeg", "jpg", "png", "gif", "svg"]: return "image"
+    elif extension in ["avi", "mov", "mp4", "flv"]: return "video"
+    return None
 
 @app.route('/delete_comment', methods=['GET', 'POST'])
 def delete_comment():
@@ -458,7 +473,7 @@ def newreply():
         return redirect(url_for("login"))
     # otherwise we are good to post
     else:
-        insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime()])
+        insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" , "type"], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime(), "text"])
         return redirect(request.referrer)
 
 @app.route('/delete_reply', methods=['GET', 'POST'])
@@ -689,12 +704,6 @@ def recommendations():
                 "select * from users where z_id=?", [user["user"]], one=True)
             recommendations.append(user_data)
         return render_template("recommendations.html", recommendations=recommendations)
-
-# http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
-# ensures safe filename
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 if __name__ == '__main__':
