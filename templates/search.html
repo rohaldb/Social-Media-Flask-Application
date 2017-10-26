@@ -1,53 +1,83 @@
 {% extends "layout.html" %}
 
 {% block body_contents %}
-  <h1> Matched Users </h1>
-  {% for user in matched_users%}
+  <h1 class="text-center">Displaying results for '{{search_query}}'</h1>
+  <h1 class="text-center">Users</h1>
   <div class="row">
-    <div class="col-sm-12">
-      <a href="{{url_for('profile', z_id=user['z_id'])}}">{{user["name"]}} ({{user["z_id"]}})</a>
+  {% for user in matched_users%}
+    <div class="card" style="width: 20rem;">
       {% if user['image_path'] %}
-        <a href="{{url_for('profile', z_id=user['z_id'])}}"><img src="{{url_for('static', filename=user['image_path'])}}" width="250px"></a>
+        <a href="{{url_for('profile', z_id=user['z_id'])}}"><img class="card-img-top" src="{{url_for('static', filename=user['image_path'])}}" width="250px"></a>
       {% endif %}
+      <div class="card-body">
+        <p class="card-text"><a href="{{url_for('profile', z_id=user['z_id'])}}">{{user["name"]}} ({{user["z_id"]}})</a></p>
+      </div>
     </div>
+  {% endfor %}
   </div>
-  {% endfor %}
-  <h1> Posts comments replies </h1>
-  {% for item in pcrs%}
-      {% if item["type"] == "post" %}
-        <div class="card card-outline-primary mb-3 text-center">
-          <div class="card-block">
-              <p>{{ item["message"]}}</p>
-              <small>posted by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small></small>
-          </div>
-        </div>
-    {% elif item["type"] == "comment" %}
-      <div class="card card-outline-warning mb-3 text-center">
-        <div class="card-block">
-            <p>{{ item["message"]}}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></small>
-        </div>
-      </div>
-    {% else %}
-      <div class="card card-outline-success mb-3 text-center">
-        <div class="card-block">
-            <p>{{ item["message"]}}</p>
-            <small>posted by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></small>
-        </div>
-      </div>
-    {% endif %}
-  {% endfor %}
+
   <!-- pagination navigation -->
   <nav class="text-center">
     <ul class="pagination">
       {% if prev_page %}
-        <form class="" action="{{url_for('search', page=prev_page)}}" method="post">
+        <form  style="margin:0 auto;"class="" action="{{url_for('search', page=prev_page)}}" method="post">
           <input type="hidden" name="search_query" value="{{search_query}}">
           <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Prev Page</button>
         </form>
       {% endif %}
       {% if next_page %}
-        <form class="" action="{{url_for('search', page=next_page)}}" method="post">
+        <form style="margin:0 auto;" class="" action="{{url_for('search', page=next_page)}}" method="post">
+          <input type="hidden" name="search_query" value="{{search_query}}">
+          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Next Page</button>
+        </form>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <h1> Posts comments replies </h1>
+  <div class="col-xs-12">
+    {% for item in pcrs%}
+        {% if item["type"] == "post" %}
+        <div class="card border-primary mb-3 text-center">
+          <div class="card-header bg-primary text-white">
+            <small>post created by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["id"])}}">View the full post.</a></small></small>
+          </div>
+          <div class="card-body">
+            <p class="card-text">{{ item["message"]}}</p>
+          </div>
+        </div>
+      {% elif item["type"] == "comment" %}
+      <div class="card border-warning mb-3 text-center">
+        <div class="card-header bg-warning text-white">
+          <small>comment created by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></small>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ item["message"]}}</p>
+        </div>
+      </div>
+      {% else %}
+      <div class="card border-success mb-3 text-center">
+        <div class="card-header bg-success text-white">
+          <small>reply created by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></small>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ item["message"]}}</p>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <!-- pagination navigation -->
+  <nav class="text-center">
+    <ul class="pagination">
+      {% if prev_page %}
+        <form  style="margin:0 auto;"class="" action="{{url_for('search', page=prev_page)}}" method="post">
+          <input type="hidden" name="search_query" value="{{search_query}}">
+          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Prev Page</button>
+        </form>
+      {% endif %}
+      {% if next_page %}
+        <form style="margin:0 auto;" class="" action="{{url_for('search', page=next_page)}}" method="post">
           <input type="hidden" name="search_query" value="{{search_query}}">
           <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Next Page</button>
         </form>
