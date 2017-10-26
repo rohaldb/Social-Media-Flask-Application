@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body_contents %}
-<h1>Post</h1>
+<h1 class="text-center">Post</h1>
 <div class="row text-center">
   <form  action={{url_for('newpost')}} method="post" class="col-sm-12" >
     <div class="form-group">
@@ -10,7 +10,7 @@
   </form>
 </div>
 
-<h1>Feed</h1>
+<h1 class="text-center">Feed</h1>
 
 <!-- pagination navigation -->
 <nav class="text-center">
