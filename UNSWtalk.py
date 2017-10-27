@@ -675,7 +675,6 @@ def edit_profile(z_id):
                 # save in the user model
                 update("users", ["%s='%s'" % (field, os.path.join("images", filename))], ["z_id='%s'" % z_id])
 
-
         # check which values are not empty and update them
         fields = ["name","email","program","birthday","suburb","latitude","longitude", "bio"]
         fields_to_update = []
@@ -685,11 +684,11 @@ def edit_profile(z_id):
         update("users", fields_to_update, ["z_id='%s'" % z_id])
         flash("Details successfully saved")
         return redirect(request.referrer)
-
     else:
         # get the users info to prefill
         user = query_db("select * from users where z_id=?", [z_id], one=True)
-        return render_template('edit_profile.html', z_id=z_id, user=user)
+        courses = query_db("select * from courses where user=?", [z_id])
+        return render_template('edit_profile.html', z_id=z_id, user=user, courses=courses)
 
 
 @app.route('/recommendations', methods=['GET'])
@@ -722,6 +721,30 @@ def recommendations():
             recommendations.append(user_data)
         return render_template("recommendations.html", recommendations=recommendations)
 
+
+@app.route('/remove_course/<course>', methods=['POST', 'GET'])
+def remove_course(course):
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    delete("courses", ["user='%s'" % session["current_user"], "code='%s'" % course])
+    return redirect(request.referrer)
+
+@app.route('/add_course', methods=['POST', 'GET'])
+def add_course():
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    semester = request.form.get('semester', '')
+    year = request.form.get('year', '')
+    code = request.form.get('code', '')
+    # if the user is not already enrolled in the course
+    if not query_db("select * from courses where user=? and year=? and code=? and semester=?", [session["current_user"], year, code, semester]):
+        # enroll them
+        insert("courses", False, ["user", "year", "code", "semester"], [session["current_user"], year, code, semester])
+    return redirect(request.referrer)
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)

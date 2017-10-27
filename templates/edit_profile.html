@@ -23,6 +23,31 @@
 			<button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">Update Details</button>
 		</form>
 		<a href="{{url_for('reset', z_id=session["current_user"])}}"><button class="btn btn-lg btn-warning btn-block">Reset Password</button></a>
+		<h3 class="form-signin-heading">Edit your courses</h3>
+		{%for course in courses%}
+			<a href="{{url_for('remove_course', course=course["code"])}}"><div class="btn btn-danger">Delete {{course["code"]}} {{course["year"]}} S{{course["semester"]}}</div></a>
+		{%endfor%}
+		<h3 class="form-signin-heading">Add a course</h3>
+		<form action="{{url_for('add_course')}}" method="POST" class="form-signin">
+			<label>Year</label>
+			<select name="year">
+			  <option value="2010">2010</option>
+			  <option value="2011">2011</option>
+				<option value="2012">2012</option>
+				<option value="2013">2013</option>
+				<option value="2014">2014</option>
+				<option value="2015">2015</option>
+				<option value="2016">2016</option>
+				<option value="2017">2017</option>
+			</select>
+			<label>Semester</label>
+			<select name="semester">
+			  <option value="1">1</option>
+			  <option value="2">2</option>
+			</select>
+			<input type="text" name="code" required="true">
+			<button class="btn btn-primary" name="Submit" value="Login" type="Submit">Add Course</button>
+		</form>
 	</div>
 </div>
 {% endblock %}
