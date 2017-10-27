@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block body_contents %}
-<h1 class="text-center">Post</h1>
+<h3>Post</h3>
+<hr class="colorgraph"><br>
 <div class="row text-center">
   <form  action={{url_for('newpost')}} method="post" class="col-sm-12" >
     <div class="form-group">
@@ -8,15 +9,16 @@
       <button class="btn btn-lg btn-primary" type="submit">Post</button>
     </div>
   </form>
-  <form  action={{url_for('newpost')}} method="post" class="col-sm-3" style="margin:0 auto"  enctype="multipart/form-data">
+  <form  action={{url_for('newpost')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto"  enctype="multipart/form-data">
     <div class="form-group">
-      <input type="file" name="media" accept="image/*|video/*">
       <button class="btn btn-md btn-primary my-2 my-sm-0" type="submit">Upload Media</button>
+      <input type="file" name="media" accept="image/*|video/*">
     </div>
   </form>
 </div>
 
-<h1 class="text-center">Feed</h1>
+<h3>Feed</h3>
+<hr class="colorgraph"><br>
 
 <!-- pagination navigation -->
 <nav class="text-center">

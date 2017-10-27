@@ -1,8 +1,12 @@
 {% extends "layout.html" %}
 
 {% block body_contents %}
-  <h1 class="text-center">Displaying results for '{{search_query}}'</h1>
-  <h1 class="text-center">Users</h1>
+  <h3>Displaying results for '{{search_query}}'</h3>
+  <hr class="colorgraph"><br>
+
+  <h3>Users</h3>
+  <hr class="colorgraph"><br>
+
   <div class="row">
   {% for user in matched_users%}
     <div class="card" style="width: 20rem;">
@@ -34,7 +38,8 @@
     </ul>
   </nav>
 
-  <h1> Posts comments replies </h1>
+  <h3> Posts comments replies </h3>
+  <hr class="colorgraph"><br>
   <div class="col-xs-12">
     {% for item in pcrs%}
         {% if item["type"] == "post" %}

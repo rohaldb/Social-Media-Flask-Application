@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block body_contents %}
 <h3>Recommendations are based on students who are in the same courses as you. Click here to <a href="{{url_for('edit_profile', z_id=session["current_user"])}}">edit your courses</a></h3>
+<hr class="colorgraph"><br>
 {% for user in recommendations%}
   <div class="card" style="width: 20rem;">
     {% if user['image_path'] %}

@@ -64,7 +64,9 @@
         </ul>
     </div>
   <!-- END USER DETAILS -->
-  <h1>{{user_details["name"]}}'s Friends</h1>
+  <h3>{{user_details["name"]}}'s Friends</h3>
+  <hr class="colorgraph"><br>
+
   <!-- LIST FRIENDS -->
   <div class="row">
     {% for friend in friends %}
@@ -89,7 +91,9 @@
   <!-- END FRIENDS -->
 
   <!-- USERS CONTENT -->
-  <h1>{{user_details["name"]}}'s Posts</h1>
+  <h3>{{user_details["name"]}}'s Posts</h3>
+  <hr class="colorgraph"><br>
+
   <div class="row">
       {% for pcr in pcrs %}
       <div class="card border-primary mb-3 text-center" style="width:100%;">
