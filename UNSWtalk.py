@@ -26,8 +26,8 @@ def get_resource_as_string(name, charset='utf-8'):
 app.jinja_env.globals['get_resource_as_string'] = get_resource_as_string
 
 # redirect url when returning from email
-# redirect_url = "http://cgi.cse.unsw.edu.au"
-redirect_url = "http://127.0.0.1:5000/"
+redirect_url = "http://cgi.cse.unsw.edu.au"
+# redirect_url = "http://127.0.0.1:5000/"
 
 # defines num items per page for pagination
 ITEMS_PER_PAGE = 16
