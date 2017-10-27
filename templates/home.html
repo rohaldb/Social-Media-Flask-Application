@@ -8,10 +8,10 @@
       <button class="btn btn-lg btn-primary" type="submit">Post</button>
     </div>
   </form>
-  <form  action={{url_for('newpost')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto"  enctype="multipart/form-data">
+  <form  action={{url_for('newpost')}} method="post" class="col-sm-3" style="margin:0 auto"  enctype="multipart/form-data">
     <div class="form-group">
-      <button class="btn btn-md btn-primary my-2 my-sm-0" type="submit">Upload Media</button>
       <input type="file" name="media" accept="image/*|video/*">
+      <button class="btn btn-md btn-primary my-2 my-sm-0" type="submit">Upload Media</button>
     </div>
   </form>
 </div>
@@ -60,9 +60,9 @@
         <div class="card-footer">
           <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto">
             <div class="form-group">
+              <button class="btn btn-md btn-warning my-2 my-sm-0" type="submit">Comment</button>
               <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
               <input type="hidden" value="{{item["id"]}}" name="post_id">
-              <button class="btn btn-md btn-warning my-2 my-sm-0" type="submit">Comment</button>
             </div>
           </form>
           <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto"  enctype="multipart/form-data">
@@ -93,10 +93,10 @@
       <div class="card-footer">
         <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto;">
           <div class="form-group">
+            <button class="btn btn-md btn-success my-2 my-sm-0" type="submit">Reply</button>
             <input class="form-control" type="text" name="message" placeholder="Enter a Reply" required="true"></input>
             <input type="hidden" value="{{item["id"]}}" name="post_id">
             <input type="hidden" value="{{item["comment"]}}" name="comment_id">
-            <button class="btn btn-md btn-success my-2 my-sm-0" type="submit">Reply</button>
           </div>
         </form>
       </div>
