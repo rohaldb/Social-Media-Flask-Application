@@ -25,9 +25,6 @@ def get_resource_as_string(name, charset='utf-8'):
         return f.read().decode(charset)
 app.jinja_env.globals['get_resource_as_string'] = get_resource_as_string
 
-# redirect url when returning from email
-redirect_url = "http://cgi.cse.unsw.edu.au"
-
 # defines num items per page for pagination
 ITEMS_PER_PAGE = 16
 
@@ -634,24 +631,24 @@ def verificationEmailText(z_id):
     return """
 Thanks for signing up %s!
 Click the link below to verify your account:
-%s%s
-    """ % (z_id, redirect_url, url_for('verify', z_id=z_id))
+%s
+    """ % (z_id, url_for('verify', z_id=z_id, _external=True))
 
 # generates password reset email text
 def passwordResetEmailText(z_id):
     return """
 Hi %s,
 Click the link below to reset your email:
-%s%s
-    """ % (z_id, redirect_url, url_for('reset', z_id=z_id))
+%s
+    """ % (z_id, url_for('reset', z_id=z_id, _external=True))
 
 # generates friend request email text
 def friendRequestEmailText(reference, friend_z_id):
     return """
 Hi %s,
 %s wants to add you as a friend. Click the link below to accept:
-%s%s
-    """ % (friend_z_id, reference, redirect_url, url_for('addfriend', reference=reference, friend=friend_z_id))
+%s
+    """ % (friend_z_id, reference, url_for('addfriend', reference=reference, friend=friend_z_id, _external=True))
 
 # https://stackoverflow.com/a/26191922/4803964
 # sends email via gmail stmp
@@ -795,4 +792,4 @@ def add_course():
 
 if __name__ == '__main__':
     app.secret_key = os.urandom(12)
-    app.run(debug=True)
+    app.run(threaded=True)
