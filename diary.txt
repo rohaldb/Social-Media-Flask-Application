@@ -58,3 +58,9 @@ Stop: 1pm
 Activity: coding
 Comments: Deleting profile images and styling of site.
 ------------------------------------------------
+Date: 27/10
+Start: 1pm
+Stop: 3:30pm
+Activity: coding
+Comments: Can now post media
+------------------------------------------------
