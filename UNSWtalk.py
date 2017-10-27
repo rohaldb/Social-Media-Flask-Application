@@ -698,7 +698,8 @@ def edit_profile(z_id):
 
 
 @app.route('/recommendations', methods=['GET'])
-def recommendations():
+@app.route('/recommendations/<int:page>', methods=['GET'])
+def recommendations(page=1):
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
@@ -725,7 +726,16 @@ def recommendations():
             user_data = query_db(
                 "select * from users where z_id=?", [user["user"]], one=True)
             recommendations.append(user_data)
-        return render_template("recommendations.html", recommendations=recommendations)
+        # calculate pagination indicies
+        start = (page-1)*ITEMS_PER_PAGE
+        end = page*ITEMS_PER_PAGE
+        # set next/ prev, possible to be changed on boundaries
+        prev_page = page-1
+        next_page = page+1
+        # check if we are out of bounds
+        if page <= 1: start = 0; prev_page = None;
+        if end >= len(recommendations): end = len(recommendations); next_page = None;
+        return render_template("recommendations.html", recommendations=recommendations[start:end], prev_page=prev_page, next_page=next_page)
 
 
 @app.route('/remove_course/<course>', methods=['POST', 'GET'])
@@ -745,7 +755,7 @@ def add_course():
         return redirect(url_for("login"))
     semester = request.form.get('semester', '')
     year = request.form.get('year', '')
-    code = request.form.get('code', '')
+    code = request.form.get('code', '').upper()
     # if the user is not already enrolled in the course
     if not query_db("select * from courses where user=? and year=? and code=? and semester=?", [session["current_user"], year, code, semester]):
         # enroll them
