@@ -64,3 +64,9 @@ Stop: 3:30pm
 Activity: coding
 Comments: Can now post media
 ------------------------------------------------
+Date: 28/10
+Start: 9pm
+Stop: 11am
+Activity: submission
+Comments: Fixed small bug where posts werent showing and submitted
+------------------------------------------------
