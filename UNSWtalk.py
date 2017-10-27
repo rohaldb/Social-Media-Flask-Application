@@ -391,9 +391,16 @@ def newpost():
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
     # otherwise we are good to post
+    # are we commenting media or a text
+    if "media" in request.files:
+        file = request.files["media"]
+        filename = secure_filename(file.filename)
+        file.save(os.path.join("static/images", filename))
+        file_type = determineMediaType(filename)
+        insert("posts", True, ["id", "user", "message", "type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
         insert("posts", True, ["id", "user", "message", "created_at", "type"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime(), "text"])
-        return redirect(request.referrer)
+    return redirect(request.referrer)
 
 @app.route('/delete_post', methods=['GET', 'POST'])
 def delete_post():
@@ -472,9 +479,16 @@ def newreply():
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
     # otherwise we are good to post
+    # are we commenting media or a text
+    if "media" in request.files:
+        file = request.files["media"]
+        filename = secure_filename(file.filename)
+        file.save(os.path.join("static/images", filename))
+        file_type = determineMediaType(filename)
+        insert("replies", True, ["id", "post","comment", "user", "message", "type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, comment_id,session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
         insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" , "type"], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime(), "text"])
-        return redirect(request.referrer)
+    return redirect(request.referrer)
 
 @app.route('/delete_reply', methods=['GET', 'POST'])
 def delete_reply():
