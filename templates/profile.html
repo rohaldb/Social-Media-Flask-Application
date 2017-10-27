@@ -97,7 +97,17 @@
           <small>posted at {{ pcr["created_at"]}}. <a href="{{url_for('viewpost', id=pcr["id"])}}">View the full post.</a></small>
         </div>
         <div class="card-body">
-          <p class="card-text">{{ pcr["message"] | safe }}</p>
+          <p class="card-text">
+            {%if pcr["media_type"] == "text"%}
+              <p class="card-text">{{ pcr["message"]}}</p>
+            {%elif pcr["media_type"] == "image"%}
+              <img src="{{url_for('static', filename=pcr['content_path'])}}">
+            {%elif pcr["media_type"] == "video"%}
+              <video width="320" height="240" controls>
+                <source src="{{url_for('static', filename=pcr['content_path'])}}" type="video/webm">
+              </video>
+            {%endif%}
+          </p>
         </div>
         <div class="card-footer">
           <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto">
@@ -105,6 +115,13 @@
               <input class="form-control" type="text" name="message" placeholder="Enter a Comment" required="true"></input>
               <input type="hidden" value="{{pcr["id"]}}" name="post_id">
               <button class="btn btn-md btn-warning my-2 my-sm-0" type="submit">Comment</button>
+            </div>
+          </form>
+          <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto"  enctype="multipart/form-data">
+            <div class="form-group">
+              <button class="btn btn-md btn-warning my-2 my-sm-0" type="submit">Upload Media Comment</button>
+              <input type="hidden" value="{{pcr["id"]}}" name="post_id">
+              <input type="file" name="media" accept="image/*|video/*">
             </div>
           </form>
         </div>
