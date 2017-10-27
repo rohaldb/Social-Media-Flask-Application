@@ -52,7 +52,7 @@
               <img src="{{url_for('static', filename=item['content_path'])}}">
             {%elif item["media_type"] == "video"%}
               <video width="320" height="240" controls>
-                <source src="{{url_for('static', filename=item['content_path'])}}" type="video/webm">
+                <source src="{{url_for('static', filename=item['content_path'])}}" >
               </video>
             {%endif%}
           </p>
@@ -85,7 +85,7 @@
             <img src="{{url_for('static', filename=item['content_path'])}}">
           {%elif item["media_type"] == "video"%}
             <video width="320" height="240" controls>
-              <source src="{{url_for('static', filename=item['content_path'])}}" type="video/webm">
+              <source src="{{url_for('static', filename=item['content_path'])}}" >
             </video>
           {%endif%}
         </p>
@@ -112,7 +112,7 @@
             <img src="{{url_for('static', filename=item['content_path'])}}">
           {%elif item["media_type"] == "video"%}
             <video width="320" height="240" controls>
-              <source src="{{url_for('static', filename=item['content_path'])}}" type="video/webm">
+              <source src="{{url_for('static', filename=item['content_path'])}}" >
             </video>
           {%endif%}
         </p>
