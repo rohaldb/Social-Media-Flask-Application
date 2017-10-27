@@ -1,8 +1,10 @@
 #!/web/cs2041/bin/python3.6.3
 
-# written by andrewt@cse.unsw.edu.au October 2017
-# as a starting point for COMP[29]041 assignment 2
-# https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/
+# COMP2041 assignment 3. Spec:https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/index.html
+# This is a social media type platform written in flask.  This file uses a database that is created in an acompanying file called database_creator.py
+# throughout the code, you will see the term 'pcr' many times. This stands for 'Posts, Comments and Replies'
+# friendships are saved bi directionally in the database. However, given that some friendships are one way in the supplied dataset, we consider these one way friendships as bidirectional.
+
 import smtplib
 import os
 import re
@@ -15,8 +17,6 @@ from flask import Markup
 from werkzeug.utils import secure_filename
 
 DATABASE = 'database.db'
-
-
 app = Flask(__name__)
 
 #used to import CSS files
@@ -27,29 +27,31 @@ app.jinja_env.globals['get_resource_as_string'] = get_resource_as_string
 
 # redirect url when returning from email
 redirect_url = "http://cgi.cse.unsw.edu.au"
-# redirect_url = "http://127.0.0.1:5000/"
 
 # defines num items per page for pagination
 ITEMS_PER_PAGE = 16
 
 
+# BEGIN DATABASE FUNCTIONS:
+# referenced from http://flask-.readthedocs.io/en/0.2/patterns/sqlite3/ and # http://flask.pocoo.org/snippets/37/
 def connect_db():
     return sqlite3.connect(DATABASE)
-# database open conn
 
-
+# initialises connection before requests
 @app.before_request
 def before_request():
     g.db = connect_db()
 
-
+# query function
 def query_db(query, args=(), one=False):
     cur = g.db.execute(query, args)
     rv = [dict((cur.description[idx][0], value)
                for idx, value in enumerate(row)) for row in cur.fetchall()]
     return (rv[0] if rv else None) if one else rv
 
-# http://flask.pocoo.org/snippets/37/
+# insert function. format fields are fields to update, values are the values to update to
+# since some insert operations require a date, we have a boolean date parameter
+# if there is a date, assumes date is the final field/value
 def insert(table, date, fields=(), values=()):
     # g.db is the database connection
     cur = g.db.cursor()
@@ -73,7 +75,7 @@ def insert(table, date, fields=(), values=()):
     cur.close()
     return id
 
-# deletes items based
+# deletes items from table that match the conditions
 def delete(table, conditions=()):
     # g.db is the database connection
     cur = g.db.cursor()
@@ -86,7 +88,8 @@ def delete(table, conditions=()):
     cur.close()
     return id
 
-def update(table, fields, conditions):
+# updates field values in table that match conditions
+def update(table, fields=(), conditions=()):
     # g.db is the database connection
     cur = g.db.cursor()
     query = 'UPDATE %s SET %s where %s' % (
@@ -99,30 +102,29 @@ def update(table, fields, conditions):
     cur.close()
     return id
 
+# closes connection after requests
 @app.after_request
 def after_request(response):
     g.db.close()
     return response
+# END DATABASE FUNCTIONS
 
-
+# landing page on first arrival
 @app.route('/', methods=['GET', 'POST'])
 def landing():
-    if "current_user" in session:
-        print("current user from start is ")
-        print(session["current_user"])
-    else:
-        print("aint no user bish")
     return render_template('start.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # if loggin user in
     if request.method == 'POST':
+        # extract fields
         z_id = request.form.get('z_id', '')
         password = request.form.get('password', '')
         user = query_db("select * from users where z_id=? and password=?",[z_id, password], one=True)
+        # if user is found
         if user:
-            # sign them in
             if user["verified"]:
                 session["current_user"] = z_id
                 response = make_response(redirect(url_for("home")))
@@ -132,39 +134,49 @@ def login():
                 flash("Please verify your email address before continuing")
                 response = make_response(redirect(url_for("landing")))
                 return response
+        # otherwise return error
         else:
             flash("Unknown username or password")
             response = make_response(render_template('login.html'))
             return response
+    # otherwise return template
     else:
         return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    # if we are registering new user
     if request.method == 'POST':
+        # extract fields
         email = request.form.get('email', '')
         password = request.form.get('password', '')
         z_id = request.form.get('z_id', '')
         name = request.form.get('name', '')
         existing_user = query_db("select * from users where z_id=?",[z_id], one=True)
+        # if z_id already in use, return error
         if existing_user:
             flash("A user with this zid has already made an account")
             response = make_response(render_template('signup.html'))
             return response
+        # otherwise, sign up
         else:
             insert("users", False, ["z_id", "email", "password", "name", "image_path","verified"], [z_id, email, password, name, 'images/defaultprofile.png', 0])
+            # send verification email
             sendmail(email, "Verify Account", verificationEmailText(z_id))
             flash("Please verify your email address before continuing")
             response = make_response(redirect(url_for("landing")))
             return response
+    # otherwise return template
     else:
         return render_template('signup.html')
 
 @app.route('/forgot', methods=['GET', 'POST'])
 def forgot():
     if request.method == 'POST':
+        # extract details
         z_id = request.form.get('z_id', '')
         user = query_db("select * from users where z_id=?", [z_id], one=True)
+        # send the reset email
         sendmail(user["email"], "Password Reset", passwordResetEmailText(z_id))
         flash("Password Reset sent")
         return make_response(redirect(url_for("landing")))
@@ -182,6 +194,7 @@ def logout():
         return response
 
 
+# handles the search feature. Searches based on user name/id and posts, comments and replie
 @app.route('/search', methods=['GET', 'POST'])
 @app.route('/search/<int:page>', methods=['GET', 'POST'])
 def search(page=1):
@@ -189,9 +202,9 @@ def search(page=1):
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # extract the thing we are searching for
+    # extract query
     search_query = request.form.get('search_query', '')
-    # find matched user
+    # find users whos name or z_id match
     matched_users = query_db("select * from users where z_id like ? or name like ? and verified=1", ['%'+search_query+'%', '%'+search_query+'%'])
     # find matching pcrs
     pcrs = getPCRThatMention(search_query)
@@ -199,12 +212,17 @@ def search(page=1):
     pcrs = sorted(pcrs, key=lambda k: datetime.strptime(k['created_at'], '%Y-%m-%d %H:%M:%S'), reverse=True)
     # sanitize them
     for i in pcrs: sanitizePCR(i)
+
+    # pagination for this page is complicated, since we have two different lists (users and pcrs) being paginated on one page.
+    # there is one page parameter, which will continue until the longer of the two lists runs out of elements.
+    # if one of the lists runs out of elements before the longer one does, we simply stop displaying results for the shorter list
+
     # calculate pagination indicies
     users_start = (page-1)*ITEMS_PER_PAGE
     users_end = page*ITEMS_PER_PAGE
     pcrs_start = (page-1)*ITEMS_PER_PAGE
     pcrs_end = page*ITEMS_PER_PAGE
-    # set next/ prev, possible to be changed on boundaries
+    # set next/ prev page count
     prev_page = page-1
     next_page = page+1
     # check if we are out of bounds. If so, fix
@@ -221,44 +239,34 @@ def search(page=1):
     if users_start <= 0 and pcrs_end <= 0:
         prev_page = None
 
+    # render template with appropraite list elements
     return render_template('search.html', matched_users=matched_users[users_start:users_end], pcrs=pcrs[pcrs_start:pcrs_end], prev_page=prev_page, next_page=next_page, search_query=search_query)
 
-
+# handles a users profile
 @app.route('/profile/<z_id>', methods=['GET', 'POST'])
 def profile(z_id):
     # redirect back to login if not authenticated
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
+
     # get the users details
-    user_details = getUserDetails(z_id)
+    user_details = query_db("select * from users where z_id=?", [z_id], one=True)
     # get the posts, comments and replies.
-    pcrs = getPCRofUser(z_id)
+    pcrs = query_db("select * from posts where user=? order by created_at DESC", [z_id])
     # sanitize them
     for i in pcrs: sanitizePCR(i)
     # get the users friend details
     friends = getFriends(z_id)
-    # get the friendship status between current_user and this user
+    # get the friendship status between current_user and this user (not used if a user is accessing his own page)
     friendship = query_db("select * from friends where reference=? and friend=?",[session["current_user"], z_id], one=True)
-    # check if the current user has a pending friend request that he can accept
+    # check if the current user has a pending friend request from this pages user (not used if a user is accessing his own page)
     pending_request = query_db("select * from friends where reference=? and friend=? and accepted=0",[z_id, session["current_user"]], one=True)
     return render_template('profile.html', profile_z_id=z_id ,user_details=user_details, public_attrs=["program", "zid", "birthday", "name", "bio"], pcrs=pcrs, friends=friends, friendship=friendship, pending_request=pending_request)
 
-# gets a users personal details
 
-
-def getUserDetails(z_id):
-    a = query_db("select * from users where z_id=?", [z_id], one=True)
-    return a
-
-# gets all of a users friends
-
-
+# gets a users friends information
 def getFriends(z_id):
-    # redirect back to login if not authenticated
-    if not "current_user" in session:
-        flash("You must be logged in to access that page")
-        return redirect(url_for("login"))
     friends = []
     # find the users friends from the friends table
     results = query_db("select friend from friends where reference=? and accepted=1", [z_id])
@@ -269,39 +277,36 @@ def getFriends(z_id):
         friends.append(friend_data)
     return friends
 
-
-# gets the comments, posts and replies for a user
-def getPCRofUser(z_id):
-    posts = query_db(
-        "select * from posts where user=? order by created_at DESC", [z_id])
-    return posts
-
-
+# cleans up a list of posts comments and replies by calling sub function
 def sanitizePCR(object):
     sanitizeTime(object)
     replaceTagsWithLinks(object)
     sanitizeNewLines(object)
 
+# replaces '\n' with html <br> element
 def sanitizeNewLines(object):
     object["message"] = Markup(re.sub(r"\\n", "<br>", object["message"]))
 
 
+# formats the time
 def sanitizeTime(object):
     # remove time zone because cant get working with %z and convert to datetime
     time = datetime.strptime(object["created_at"], '%Y-%m-%d %H:%M:%S')
     # update to desired format
     object["created_at"] = datetime.strftime(time, ' %H:%M:%S, %a %d %m %Y')
 
-
+# replaces all tags with links to the users profile
 def replaceTagsWithLinks(object):
     text = object["message"]
     # find all instances of zXXXXXXX and replace with link
     for match in re.findall(r"\b(z\d{7})\b", text):
         url = url_for('profile', z_id=match)
-        text = text.replace(match, "<a href='%s'>%s</a>" % (url, match))
+        # find the name of the user who is tagged
+        user = query_db("select * from users where z_id=?", [match], one=True)
+        text = text.replace(match, "<a href='%s'>%s</a>" % (url, user["name"]))
     object["message"] = text
 
-
+# loggined in users home page. Handles the feed
 @app.route('/home', methods=['GET', 'POST'])
 @app.route('/home/<int:page>', methods=['GET', 'POST'])
 def home(page=1):
@@ -309,10 +314,15 @@ def home(page=1):
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # get the feed content, and set source and identifier so we can print appropriately on feed
-    friends_content = setObjectSource(setObjectType(getFriendsPosts(session["current_user"]), "post"),"friend")
-    mentions = setObjectSource(getPCRThatMention(session["current_user"]), "mention")
-    users_posts = setObjectSource(setObjectType(getRecentPostsOfUser(session["current_user"]), "post"), "self")
+
+    # the feed consists of three elements mixed together. we first call functions to get the data
+    # we then call setObjectSource and setObjectType to help us with displaying them in one feed. see respective functions for explanation on usage
+    friends_content = getFriendsPosts(session["current_user"])
+    friends_content = setObjectSource(setObjectType(friends_content, "post"),"friend")
+    mentions = getPCRThatMention(session["current_user"])
+    mentions = setObjectSource(mentions, "mention")
+    users_posts = query_db("select * from posts where user=? order by created_at DESC", [session["current_user"]])
+    users_posts = setObjectSource(setObjectType(users_posts, "post"), "self")
     # group the elements into a single list
     feed = friends_content + users_posts + mentions
     # sort them by date
@@ -330,27 +340,7 @@ def home(page=1):
     if end >= len(feed): end = len(feed); next_page = None;
     return render_template('home.html', feed=feed[start:end], prev_page=prev_page, next_page=next_page)
 
-def getRecentPostsOfUser(z_id):
-    posts = query_db("select * from posts where user=? order by created_at DESC", [z_id])
-    return posts
-
-
-def getCommentsAndRepliesOfPost(post):
-    sanitizePCR(post)
-    # get the comments for each post
-    post["comments"] = []
-    for comment in query_db("select * from comments where post=?  order by created_at DESC", [post["id"]]):
-        sanitizePCR(comment)
-        # get the replies for each comment
-        comment["replies"] = []
-        for reply in query_db("select * from replies where comment=?  order by created_at DESC", [comment["id"]]):
-            sanitizePCR(reply)
-            # append to parent objects
-            comment["replies"].append(reply)
-        post["comments"].append(comment)
-    return post
-
-# gets friends posts
+# gets posts of friends
 def getFriendsPosts(z_id):
     query = """select * from posts where user in
     (select friend from friends where reference=?)
@@ -358,14 +348,12 @@ def getFriendsPosts(z_id):
     friends_posts = query_db(query, [z_id])
     return friends_posts
 
-
-
-# gets alll posts of posts comments or replies where a user is mentioned
+# gets all posts comments and replies that mention the parameter
 def getPCRThatMention(z_id):
-    # query to find all posts where the user is mentioned:
     post_query = "select * from posts where message like ? order by created_at desc"
     comment_query = "select * from comments where message like ? order by created_at desc"
     reply_query = "select * from replies where message like ? order by created_at desc"
+    # we then set the type field so we can tell whether an object is a post comment or reply later
     posts = setObjectType(query_db(post_query, ['%'+z_id+'%']), "post")
     comments = setObjectType(query_db(comment_query, ['%'+z_id+'%']), "comment")
     replies = setObjectType(query_db(reply_query, ['%'+z_id+'%']), "replies")
@@ -377,20 +365,70 @@ def setObjectType(objects, type):
         object["type"] = type
     return objects
 
-# sets source to either mention, friend or self to help with displaying on the ui
+# sets source to either mention, friend or self to help with displaying custom messages on home feed
 def setObjectSource(objects, type):
     for object in objects:
         object["source"] = type
     return objects
 
+# handles creation of new posts
 @app.route('/newpost', methods=['GET', 'POST'])
 def newpost():
-    message = request.form.get('message', '')
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # otherwise we are good to post
+
+    message = request.form.get('message', '')
+    # if we are uploading media
+    if "media" in request.files:
+        file = request.files["media"]
+        filename = secure_filename(file.filename)
+        # make the name slightly unique in case multiple people upload image w same name
+        filename = session["current_user"] + "-" + filename
+        if file.filename != "":
+            # save the file
+            file.save(os.path.join("static/images", filename))
+            # determine image vs video
+            file_type = determineMediaType(filename)
+            insert("posts", True, ["id", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
+    else:
+        # insert text message
+        insert("posts", True, ["id", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime(), "text"])
+    return redirect(request.referrer)
+
+# deletes posts
+@app.route('/delete_post', methods=['GET', 'POST'])
+def delete_post():
+    # check user is logged
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+    post_id = request.form.get('post_id', '')
+    else:
+        # perform delete
+        deletePost(post_id)
+        return redirect(url_for("home"))
+
+# deletes a post with the id supplied, and all dependent comments and replies
+def deletePost(post_id):
+    # find all dependent comments and delete them
+    comments = query_db("select * from comments where post=?", [post_id])
+    for comment in comments:
+        deleteComments(comment["id"])
+    # then delete post
+    delete("posts", ["id = '%s'" % post_id])
+
+# creates new comments
+@app.route('/newcomment', methods=['GET', 'POST'])
+def newcomment():
+    # check user is logged in
+    if not "current_user" in session:
+        flash("You must be logged in to access that page")
+        return redirect(url_for("login"))
+
+    message = request.form.get('message', '')
+    post_id = request.form.get('post_id', '')
     # are we commenting media or a text
     if "media" in request.files:
         file = request.files["media"]
@@ -398,118 +436,80 @@ def newpost():
         # make the name slightly unique in case multiple people upload image w same name
         filename = session["current_user"] + "-" + filename
         if file.filename != "":
+            # save file
             file.save(os.path.join("static/images", filename))
+            # check video vs image
             file_type = determineMediaType(filename)
-            insert("posts", True, ["id", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
+            insert("comments", True, ["id", "post", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
-        insert("posts", True, ["id", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime(), "text"])
+        # otherwise insert text comment
+        insert("comments", True, ["id", "post", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime(), "text"])
     return redirect(request.referrer)
 
-@app.route('/delete_post', methods=['GET', 'POST'])
-def delete_post():
-    post_id = request.form.get('post_id', '')
-    # check user is logged in
-    if not "current_user" in session:
-        flash("You must be logged in to access that page")
-        return redirect(url_for("login"))
-    else:
-        deletePost(post_id)
-        return redirect(url_for("home"))
-
-# deletes a post with the id supplied
-def deletePost(post_id):
-    print("deleting %s" % post_id)
-    # find all dependent comments and delete them too
-    comments = query_db("select * from comments where post=?", [post_id])
-    for comment in comments:
-        deleteComments(comment["id"])
-    delete("posts", ["id = '%s'" % post_id])
-
-
-@app.route('/newcomment', methods=['GET', 'POST'])
-def newcomment():
-    message = request.form.get('message', '')
-    post_id = request.form.get('post_id', '')
-    # check user is logged in
-    if not "current_user" in session:
-        flash("You must be logged in to access that page")
-        return redirect(url_for("login"))
-    else:
-        # are we commenting media or a text
-        if "media" in request.files:
-            file = request.files["media"]
-            filename = secure_filename(file.filename)
-            # make the name slightly unique in case multiple people upload image w same name
-            filename = session["current_user"] + "-" + filename
-            if file.filename != "":
-                file.save(os.path.join("static/images", filename))
-                file_type = determineMediaType(filename)
-                insert("comments", True, ["id", "post", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
-        else:
-            insert("comments", True, ["id", "post", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime(), "text"])
-        return redirect(request.referrer)
-
+# checks extension to determine image vs video
 def determineMediaType(filename):
     extension = filename.rsplit('.', 1)[1]
-    # print("extension is %s", extension)
     if extension in ["jpeg", "jpg", "png", "gif", "svg"]: return "image"
     elif extension in ["avi", "mov", "mp4", "flv", "webm"]: return "video"
     return None
 
+# deletes comments
 @app.route('/delete_comment', methods=['GET', 'POST'])
 def delete_comment():
-    comment_id = request.form.get('comment_id', '')
-    # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    else:
-        deleteComments(comment_id)
-        return redirect(request.referrer)
 
-# deletes a comment with the id supplied
+    comment_id = request.form.get('comment_id', '')
+    deleteComments(comment_id)
+    return redirect(request.referrer)
+
+# deletes a comment with the id supplied, and all dependent replies
 def deleteComments(comment_id):
-    # find all dependent replies and delete them too
+    # find all dependent replies and delete them
     replies = query_db("select * from replies where comment=?", [comment_id])
     for reply in replies:
         deleteReply(reply["id"])
+    # then delete the comment
     delete("comments", ["id = '%s'" % comment_id])
 
+# creates new replies
 @app.route('/newreply', methods=['GET', 'POST'])
 def newreply():
-    message = request.form.get('message', '')
-    post_id = request.form.get('post_id', '')
-    comment_id = request.form.get('post_id', '')
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # otherwise we are good to post
-    # are we commenting media or a text
+
+    message = request.form.get('message', '')
+    post_id = request.form.get('post_id', '')
+    comment_id = request.form.get('post_id', '')
+    # if we are posting media
     if "media" in request.files:
         file = request.files["media"]
         filename = secure_filename(file.filename)
         # make the name slightly unique in case multiple people upload image w same name
         filename = session["current_user"] + "-" + filename
         if file.filename != "":
+            # save the file
             file.save(os.path.join("static/images", filename))
+            # check video vs image
             file_type = determineMediaType(filename)
             insert("replies", True, ["id", "post","comment", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, comment_id,session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
+        # otherwise save text reply
         insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" , "media_type"], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime(), "text"])
     return redirect(request.referrer)
 
 @app.route('/delete_reply', methods=['GET', 'POST'])
 def delete_reply():
-    reply_id = request.form.get('reply_id', '')
-    # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    # otherwise we are good to post
-    else:
-        deleteReply(reply_id)
-        return redirect(request.referrer)
+
+    reply_id = request.form.get('reply_id', '')
+    deleteReply(reply_id)
+    return redirect(request.referrer)
 
 # deletes a reply with the id supplied
 def deleteReply(reply_id):
@@ -520,6 +520,7 @@ def getCurrentDateTime():
     d = datetime.now()
     return datetime.strftime(d, '%Y-%m-%d %H:%M:%S')
 
+# dislpays a post with all its  comments and replies
 @app.route('/post/<id>', methods=['GET', 'POST'])
 def viewpost(id):
     # check user is logged in
@@ -530,8 +531,24 @@ def viewpost(id):
     post = query_db("select * from posts where id=? order by created_at DESC",[id], one=True)
     # get comments and replies
     pcr = getCommentsAndRepliesOfPost(post)
-    # render
     return render_template('post.html', pcr=pcr)
+
+# gets all the comments and replies of a post
+def getCommentsAndRepliesOfPost(post):
+    sanitizePCR(post)
+    post["comments"] = []
+    # itterate over comments
+    for comment in query_db("select * from comments where post=?  order by created_at DESC", [post["id"]]):
+        sanitizePCR(comment)
+        # get the replies for each comment
+        comment["replies"] = []
+        for reply in query_db("select * from replies where comment=?  order by created_at DESC", [comment["id"]]):
+            sanitizePCR(reply)
+            # append to parent comment
+            comment["replies"].append(reply)
+        # append to return list
+        post["comments"].append(comment)
+    return post
 
 @app.route('/removefriend', methods=['GET', 'POST'])
 def removefriend():
@@ -539,20 +556,21 @@ def removefriend():
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
-    #get the friend id from the form
+    # extract details
     friend_id = request.form.get('friend_id', '')
     # delete the friend from current users list and delete current user from friends list
     delete("friends", ["reference = '%s'" % session["current_user"], "friend = '%s'" % friend_id])
     delete("friends", ["friend = '%s'" % session["current_user"], "reference = '%s'" % friend_id])
-    # return to where we came from
     return redirect(request.referrer)
 
+# sends a friend request
 @app.route('/friend_request/<friend_id>', methods=['GET', 'POST'])
 def friend_request(friend_id):
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
+
     # find friends email
     friends_email = query_db("select * from users where z_id=?", [friend_id], one=True)["email"]
     # send email to friend
@@ -562,19 +580,20 @@ def friend_request(friend_id):
     flash("Friend request sent")
     return redirect(request.referrer)
 
+# accepts a friend request
 @app.route('/addfriend/<reference>/<friend>', methods=['GET', 'POST'])
 def addfriend(reference,friend):
     #update the pending friend request to be accepted
     update("friends", ["accepted=1"], ["reference='%s'" % reference, "friend='%s'" % friend])
     # create the bi directional friendship
     insert("friends", False, ["reference", "friend", "accepted"], [friend, reference, 1])
-    # redirect to landingf
     flash("friend request accepted")
     return possibleBackRoute()
 
+# verifies a users account
 @app.route('/verify/<z_id>', methods=['GET', 'POST'])
 def verify(z_id):
-    # set verified field to 1
+    # set account to verified
     update("users", ["verified=1"], ["z_id='%s'" % z_id])
     # log them in and go home
     session["current_user"] = z_id
@@ -582,31 +601,36 @@ def verify(z_id):
     return possibleBackRoute()
 
 # checks if it is possible to go back to a previous page, othweise returns route to landing
+# used when coming to site from email redirect
 def possibleBackRoute():
     if request.referrer:
         return redirect(request.referrer)
     else:
         return redirect(url_for('landing'))
 
-
+# resets password
 @app.route('/reset/<z_id>', methods=['GET', 'POST'])
 def reset(z_id):
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
+    # if we are performing the pssword reset
     if request.method == 'POST':
         #get the new password and z_id
         password = request.form.get('password', '')
         z_id = request.form.get('z_id', '')
+        # update password
         update("users", ["password='%s'"% password], ["z_id='%s'" % z_id])
         # log them in and go home
         session["current_user"] = z_id
         flash("Password successfully reset")
         return redirect(url_for("home"))
+    # otherwise return form
     else:
         return render_template('reset.html', z_id=z_id)
 
+# generates account verification email text
 def verificationEmailText(z_id):
     return """
 Thanks for signing up %s!
@@ -614,6 +638,7 @@ Click the link below to verify your account:
 %s%s
     """ % (z_id, redirect_url, url_for('verify', z_id=z_id))
 
+# generates password reset email text
 def passwordResetEmailText(z_id):
     return """
 Hi %s,
@@ -621,6 +646,7 @@ Click the link below to reset your email:
 %s%s
     """ % (z_id, redirect_url, url_for('reset', z_id=z_id))
 
+# generates friend request email text
 def friendRequestEmailText(reference, friend_z_id):
     return """
 Hi %s,
@@ -629,8 +655,9 @@ Hi %s,
     """ % (friend_z_id, reference, redirect_url, url_for('addfriend', reference=reference, friend=friend_z_id))
 
 # https://stackoverflow.com/a/26191922/4803964
+# sends email via gmail stmp
 def sendmail(to, subject, message):
-    to = to
+    # set account details. shhh dont share ;)
     gmail_user = 'z5019999ass2'
     gmail_pwd = 'z5019999password'
     smtpserver = smtplib.SMTP("smtp.gmail.com",587)
@@ -638,17 +665,16 @@ def sendmail(to, subject, message):
     smtpserver.starttls()
     smtpserver.ehlo()
     smtpserver.login(gmail_user, gmail_pwd)
+    # set contents
     header = 'To:' + to + '\n' + 'From: ' + gmail_user + '\n' + 'Subject: ' + subject +  '\n'
     msg = header + '\n' + message + '\n\n'
-    print(header)
-    print(msg)
+    # send
     smtpserver.sendmail(gmail_user, to, msg)
-    print('done!')
     smtpserver.quit()
 
+# deletes either a users profile pic or background image, depending on the image param
 @app.route('/delete_user_image/<z_id>/<image>', methods=['GET', 'POST'])
 def delete_user_image(z_id, image):
-    # deletes either a users profile pic or background image, depending on the image param
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
@@ -661,6 +687,7 @@ def delete_user_image(z_id, image):
         flash("Profile picture deleted")
     return redirect(request.referrer)
 
+# edits a users profile
 @app.route('/edit_profile/<z_id>', methods=['GET', 'POST'])
 def edit_profile(z_id):
     # check user is logged in
@@ -671,6 +698,7 @@ def edit_profile(z_id):
     if session["current_user"] != z_id:
         flash("You cannot edit someone else's profile")
         return redirect(url_for("home"))
+
     if request.method == 'POST':
         # if there is a file, save it
         for field in ["image_path", "background_path"]:
@@ -681,7 +709,7 @@ def edit_profile(z_id):
                 # save in the user model
                 update("users", ["%s='%s'" % (field, os.path.join("images", filename))], ["z_id='%s'" % z_id])
 
-        # check which values are not empty and update them
+        # check which are not empty and update them to the new values
         fields = ["name","email","program","birthday","suburb","latitude","longitude", "bio"]
         fields_to_update = []
         for field in fields:
@@ -691,12 +719,13 @@ def edit_profile(z_id):
         flash("Details successfully saved")
         return redirect(request.referrer)
     else:
-        # get the users info to prefill
+        # get the users info to prefill the form values
         user = query_db("select * from users where z_id=?", [z_id], one=True)
+        # get courses to handle course management
         courses = query_db("select * from courses where user=?", [z_id])
         return render_template('edit_profile.html', z_id=z_id, user=user, courses=courses)
 
-
+# handles friend recommendations
 @app.route('/recommendations', methods=['GET'])
 @app.route('/recommendations/<int:page>', methods=['GET'])
 def recommendations(page=1):
@@ -706,7 +735,7 @@ def recommendations(page=1):
         return redirect(url_for("login"))
     else:
         # run matching query:
-        # orders users by number of courses they take with current user (and checks they arent friends/frien request pending)
+        # orders users by number of courses they take with current user (and checks they arent already friends/friend request pending)
         users = query_db("""
                  SELECT c2.user FROM courses c1
                 INNER JOIN courses  c2 ON
@@ -737,22 +766,25 @@ def recommendations(page=1):
         if end >= len(recommendations): end = len(recommendations); next_page = None;
         return render_template("recommendations.html", recommendations=recommendations[start:end], prev_page=prev_page, next_page=next_page)
 
-
+# removes a course from a users profile
 @app.route('/remove_course/<course>', methods=['POST', 'GET'])
 def remove_course(course):
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
+    # delete course
     delete("courses", ["user='%s'" % session["current_user"], "code='%s'" % course])
     return redirect(request.referrer)
 
+# adds a course to a users profile
 @app.route('/add_course', methods=['POST', 'GET'])
 def add_course():
     # check user is logged in
     if not "current_user" in session:
         flash("You must be logged in to access that page")
         return redirect(url_for("login"))
+    # extract info
     semester = request.form.get('semester', '')
     year = request.form.get('year', '')
     code = request.form.get('code', '').upper()
