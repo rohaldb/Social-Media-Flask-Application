@@ -395,6 +395,8 @@ def newpost():
     if "media" in request.files:
         file = request.files["media"]
         filename = secure_filename(file.filename)
+        # make the name slightly unique in case multiple people upload image w same name
+        filename = session["current_user"] + "-" + filename
         if file.filename != "":
             file.save(os.path.join("static/images", filename))
             file_type = determineMediaType(filename)
@@ -437,6 +439,8 @@ def newcomment():
         if "media" in request.files:
             file = request.files["media"]
             filename = secure_filename(file.filename)
+            # make the name slightly unique in case multiple people upload image w same name
+            filename = session["current_user"] + "-" + filename
             if file.filename != "":
                 file.save(os.path.join("static/images", filename))
                 file_type = determineMediaType(filename)
@@ -485,6 +489,8 @@ def newreply():
     if "media" in request.files:
         file = request.files["media"]
         filename = secure_filename(file.filename)
+        # make the name slightly unique in case multiple people upload image w same name
+        filename = session["current_user"] + "-" + filename
         if file.filename != "":
             file.save(os.path.join("static/images", filename))
             file_type = determineMediaType(filename)
