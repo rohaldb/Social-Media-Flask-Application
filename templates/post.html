@@ -14,11 +14,11 @@
       </div>
       <div class="card-body">
         <p class="card-text">
-          {%if pcr["type"] == "text"%}
+          {%if pcr["media_type"] == "text"%}
             <p class="card-text">{{ pcr["message"]}}</p>
-          {%elif pcr["type"] == "image"%}
+          {%elif pcr["media_type"] == "image"%}
             <img src="{{url_for('static', filename=pcr['content_path'])}}">
-          {%elif pcr["type"] == "video"%}
+          {%elif pcr["media_type"] == "video"%}
             <video width="320" height="240" controls>
               <source src="{{url_for('static', filename=pcr['content_path'])}}" type="video/webm">
             </video>
@@ -57,11 +57,11 @@
               {% endif %}
             </div>
             <div class="card-body ">
-              {%if comment["type"] == "text"%}
+              {%if comment["media_type"] == "text"%}
                 <p class="card-text">{{ comment["message"]}}</p>
-              {%elif comment["type"] == "image"%}
+              {%elif comment["media_type"] == "image"%}
                 <img src="{{url_for('static', filename=comment['content_path'])}}">
-              {%elif comment["type"] == "video"%}
+              {%elif comment["media_type"] == "video"%}
                 <video width="320" height="240" controls>
                   <source src="{{url_for('static', filename=comment['content_path'])}}" type="video/webm">
                 </video>
@@ -101,11 +101,11 @@
                   </div>
                   <div class="card-body">
                     <p class="card-text">
-                      {%if reply["type"] == "text"%}
+                      {%if reply["media_type"] == "text"%}
                         <p class="card-text">{{ reply["message"]}}</p>
-                      {%elif reply["type"] == "image"%}
+                      {%elif reply["media_type"] == "image"%}
                         <img src="{{url_for('static', filename=reply['content_path'])}}">
-                      {%elif reply["type"] == "video"%}
+                      {%elif reply["media_type"] == "video"%}
                         <video width="320" height="240" controls>
                           <source src="{{url_for('static', filename=reply['content_path'])}}" type="video/webm">
                         </video>

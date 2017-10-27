@@ -45,7 +45,17 @@
           {% endif %}
         </div>
         <div class="card-body">
-          <p class="card-text">{{ item["message"]}}</p>
+          <p class="card-text">
+            {%if item["media_type"] == "text"%}
+              <p class="card-text">{{ item["message"]}}</p>
+            {%elif item["media_type"] == "image"%}
+              <img src="{{url_for('static', filename=item['content_path'])}}">
+            {%elif item["media_type"] == "video"%}
+              <video width="320" height="240" controls>
+                <source src="{{url_for('static', filename=item['content_path'])}}" type="video/webm">
+              </video>
+            {%endif%}
+          </p>
         </div>
         <div class="card-footer">
           <form  action={{url_for('newcomment')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto">
@@ -68,7 +78,17 @@
     <div class="card border-warning mb-3 text-center">
       <div class="card-header bg-warning text-white"><small>You were mentioned in the following comment by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></div>
       <div class="card-body ">
-        <p class="card-text">{{ item["message"]}}</p>
+        <p class="card-text">
+          {%if item["media_type"] == "text"%}
+            <p class="card-text">{{ item["message"]}}</p>
+          {%elif item["media_type"] == "image"%}
+            <img src="{{url_for('static', filename=item['content_path'])}}">
+          {%elif item["media_type"] == "video"%}
+            <video width="320" height="240" controls>
+              <source src="{{url_for('static', filename=item['content_path'])}}" type="video/webm">
+            </video>
+          {%endif%}
+        </p>
       </div>
       <div class="card-footer">
         <form  action={{url_for('newreply')}} method="post" class="col-sm-3 form-inline" style="margin:0 auto;">
@@ -85,7 +105,17 @@
     <div class="card border-success mb-3 text-center">
         <div class="card-header bg-success text-white"><small>You were mentioned in the following reply by <a href="{{url_for('profile', z_id=item['user'])}}">{{item["user"]}}</a> at {{ item["created_at"]}}. <a href="{{url_for('viewpost', id=item["post"])}}">View the full post.</a></small></div>
         <div class="card-body">
-        <p class="card-text">{{ item["message"]}}</p>
+        <p class="card-text">
+          {%if item["media_type"] == "text"%}
+            <p class="card-text">{{ item["message"]}}</p>
+          {%elif item["media_type"] == "image"%}
+            <img src="{{url_for('static', filename=item['content_path'])}}">
+          {%elif item["media_type"] == "video"%}
+            <video width="320" height="240" controls>
+              <source src="{{url_for('static', filename=item['content_path'])}}" type="video/webm">
+            </video>
+          {%endif%}
+        </p>
       </div>
     </div>
     {% endif %}

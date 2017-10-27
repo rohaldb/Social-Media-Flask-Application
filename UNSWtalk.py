@@ -395,11 +395,12 @@ def newpost():
     if "media" in request.files:
         file = request.files["media"]
         filename = secure_filename(file.filename)
-        file.save(os.path.join("static/images", filename))
-        file_type = determineMediaType(filename)
-        insert("posts", True, ["id", "user", "message", "type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
+        if file.filename != "":
+            file.save(os.path.join("static/images", filename))
+            file_type = determineMediaType(filename)
+            insert("posts", True, ["id", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
-        insert("posts", True, ["id", "user", "message", "created_at", "type"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime(), "text"])
+        insert("posts", True, ["id", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime(), "text"])
     return redirect(request.referrer)
 
 @app.route('/delete_post', methods=['GET', 'POST'])
@@ -436,11 +437,12 @@ def newcomment():
         if "media" in request.files:
             file = request.files["media"]
             filename = secure_filename(file.filename)
-            file.save(os.path.join("static/images", filename))
-            file_type = determineMediaType(filename)
-            insert("comments", True, ["id", "post", "user", "message", "type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
+            if file.filename != "":
+                file.save(os.path.join("static/images", filename))
+                file_type = determineMediaType(filename)
+                insert("comments", True, ["id", "post", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
         else:
-            insert("comments", True, ["id", "post", "user", "message", "created_at", "type"], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime(), "text"])
+            insert("comments", True, ["id", "post", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime(), "text"])
         return redirect(request.referrer)
 
 def determineMediaType(filename):
@@ -483,11 +485,12 @@ def newreply():
     if "media" in request.files:
         file = request.files["media"]
         filename = secure_filename(file.filename)
-        file.save(os.path.join("static/images", filename))
-        file_type = determineMediaType(filename)
-        insert("replies", True, ["id", "post","comment", "user", "message", "type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, comment_id,session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
+        if file.filename != "":
+            file.save(os.path.join("static/images", filename))
+            file_type = determineMediaType(filename)
+            insert("replies", True, ["id", "post","comment", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, comment_id,session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
-        insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" , "type"], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime(), "text"])
+        insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" , "media_type"], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime(), "text"])
     return redirect(request.referrer)
 
 @app.route('/delete_reply', methods=['GET', 'POST'])
