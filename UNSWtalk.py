@@ -391,7 +391,7 @@ def newpost():
             insert("posts", True, ["id", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
         # insert text message
-        insert("posts", True, ["id", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message, getCurrentDateTime(), "text"])
+        insert("posts", True, ["id", "user", "message", "media_type", "created_at"], [str(uuid.uuid4()).replace('-',''),session["current_user"], message,  "text", getCurrentDateTime()])
     return redirect(request.referrer)
 
 # deletes posts
@@ -439,7 +439,7 @@ def newcomment():
             insert("comments", True, ["id", "post", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
         # otherwise insert text comment
-        insert("comments", True, ["id", "post", "user", "message", "created_at", "media_type"], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message, getCurrentDateTime(), "text"])
+        insert("comments", True, ["id", "post", "user", "message", "media_type", "created_at"], [str(uuid.uuid4()).replace('-',''), post_id, session["current_user"], message,  "text", getCurrentDateTime()])
     return redirect(request.referrer)
 
 # checks extension to determine image vs video
@@ -494,7 +494,7 @@ def newreply():
             insert("replies", True, ["id", "post","comment", "user", "message", "media_type", "content_path", "created_at" ], [str(uuid.uuid4()).replace('-',''), post_id, comment_id,session["current_user"], "", file_type, "images/%s" % filename, getCurrentDateTime()])
     else:
         # otherwise save text reply
-        insert("replies", True, ["id", "comment", "post", "user", "message", "created_at" , "media_type"], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, getCurrentDateTime(), "text"])
+        insert("replies", True, ["id", "comment", "post", "user", "message", "media_type", "created_at" ], [str(uuid.uuid4()).replace('-',''), comment_id, post_id, session["current_user"], message, "text" , getCurrentDateTime()])
     return redirect(request.referrer)
 
 @app.route('/delete_reply', methods=['GET', 'POST'])
@@ -527,7 +527,7 @@ def viewpost(id):
     post = query_db("select * from posts where id=? order by created_at DESC",[id], one=True)
     # get comments and replies
     pcr = getCommentsAndRepliesOfPost(post)
-    return render_template('post.html', pcr=pcr)
+    return render_template('post.html', pcr=post)
 
 # gets all the comments and replies of a post
 def getCommentsAndRepliesOfPost(post):
