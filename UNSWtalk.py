@@ -440,7 +440,7 @@ def determineMediaType(filename):
     extension = filename.rsplit('.', 1)[1]
     # print("extension is %s", extension)
     if extension in ["jpeg", "jpg", "png", "gif", "svg"]: return "image"
-    elif extension in ["avi", "mov", "mp4", "flv"]: return "video"
+    elif extension in ["avi", "mov", "mp4", "flv", "webm"]: return "video"
     return None
 
 @app.route('/delete_comment', methods=['GET', 'POST'])
