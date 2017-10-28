@@ -3,7 +3,7 @@
 # COMP2041 assignment 3. Spec:https://cgi.cse.unsw.edu.au/~cs2041/assignments/UNSWtalk/index.html
 # This is a social media type platform written in flask.  This file uses a database that is created in an acompanying file called database_creator.py
 # throughout the code, you will see the term 'pcr' many times. This stands for 'Posts, Comments and Replies'
-# friendships are saved bi directionally in the database. However, given that some friendships are one way in the supplied dataset, we consider these one way friendships as bidirectional.
+# Friendships are saved bidirectionally in the database. See database_creator for more details on how friendship are handled in the supplied data
 
 import smtplib
 import os
@@ -173,9 +173,13 @@ def forgot():
         # extract details
         z_id = request.form.get('z_id', '')
         user = query_db("select * from users where z_id=?", [z_id], one=True)
-        # send the reset email
-        sendmail(user["email"], "Password Reset", passwordResetEmailText(z_id))
-        flash("Password Reset sent")
+        # if we find a user
+        if user:
+            # send the reset email
+            sendmail(user["email"], "Password Reset", passwordResetEmailText(z_id))
+            flash("Password Reset sent")
+        else:
+            flash("Unknown user")
         return make_response(redirect(url_for("landing")))
     else:
         return make_response(render_template('forgot.html'))
