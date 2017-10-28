@@ -34,6 +34,9 @@
 
 <div class="row">
   <div class="col-sm-12">
+  {% if feed|length == 0%}
+    <h3>Your feed is empty. Please add friends so we can generate content!</h3>
+  {% endif %}
   {% for item in feed%}
     {% if item["type"] == "post" %}
       <div class="card border-primary mb-3 text-center">

@@ -598,7 +598,7 @@ def verify(z_id):
     # log them in and go home
     session["current_user"] = z_id
     flash("Account successfully verified")
-    return possibleBackRoute()
+    return redirect(url_for('profile', z_id=z_id))
 
 # checks if it is possible to go back to a previous page, othweise returns route to landing
 # used when coming to site from email redirect
@@ -611,10 +611,6 @@ def possibleBackRoute():
 # resets password
 @app.route('/reset/<z_id>', methods=['GET', 'POST'])
 def reset(z_id):
-    # check user is logged in
-    if not "current_user" in session:
-        flash("You must be logged in to access that page")
-        return redirect(url_for("login"))
     # if we are performing the pssword reset
     if request.method == 'POST':
         #get the new password and z_id
