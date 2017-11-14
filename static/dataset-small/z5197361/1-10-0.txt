@@ -1,3 +1,0 @@
-message: !!! YES will definitely do this next time :D
-from: z5197361
-time: 2016-05-16T14:24:58+0000

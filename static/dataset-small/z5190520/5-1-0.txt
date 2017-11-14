@@ -1,3 +1,0 @@
-time: 2016-08-25T00:03:25+0000
-message: this is touching tbh
-from: z5193755
